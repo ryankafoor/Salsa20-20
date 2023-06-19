@@ -45,6 +45,17 @@ int main(int argc, char *argv[]) {
                 return EXIT_SUCCESS;
             //TODO: implement printHelp()
 
+        case 'o':
+            output_file = optarg;
+            break;
+        
+         case 'k':
+            
+            break;
+
+        case 'i':
+            
+            break;
         //TODO: finish cases, add error handling, etc-..
     }
 
