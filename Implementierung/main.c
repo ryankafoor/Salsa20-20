@@ -37,7 +37,7 @@
       }
 
 
-      if(string = malloc(sb.st_size + 1)){ //st_size does not count the null byte
+      if((string = malloc(sb.st_size + 1))){ //st_size does not count the null byte
         perror("Error in allocating memory");
         goto cleanup;
       }
@@ -96,6 +96,7 @@
       }
       uint32_t inputMatrix[16];
       uint32_t outputMatrix[16];
+      uint32_t *outputPointer = outputMatrix;
 
       //Assigning const values
       inputMatrix[0]=0x61707865;
@@ -127,7 +128,7 @@
 
         //initializing key for each byte and pointer to outputMatrix
         char keyByte;
-        char *keyPointer = (char*)*outputMatrix;
+        char *keyPointer = (char*)outputPointer;
         if (coreCounter == 0) //if mlen < 64
         {
           for (size_t j = 0; j < mlen; j++)
@@ -158,11 +159,7 @@
 
 
     //a function to write help message
-<<<<<<< HEAD
     
-=======
-    //test
->>>>>>> 4dd7a9a50af782cc2dae960227b0e861fb370c79
     //optional: beautify the help message
     void printHelp() {
         printf("TODO: \n");
