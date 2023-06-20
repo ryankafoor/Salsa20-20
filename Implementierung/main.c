@@ -5,7 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
+
+//how many implementations are there?
 #define IMPLEMENTATION_MAX 1
 
 
@@ -97,21 +100,34 @@
    //TODO: Benchmarking framework
 
 
+    //a function to write help message
+    //optional: beautify the help message
+    void printHelp() {
+        printf("TODO: \n");
+        printf("Encrypts the input file using the Salsa20 stream cipher\n");
+        printf("using the provided key and nonce / initial vector\n");
+        printf("");
+        printf("  -V, --version=VERSION_NUMBER  use the implementation with the given version number\n");
+        printf("  -B, --benchmark[=FILE]        benchmark the implementation and write the results to FILE\n");
+        printf("  -k, --key=KEY                 use KEY as the encryption key\n");
+        printf("  -i, --init_vector=IV          use IV as the initialisation vector\n");
+        printf("  -h, --help                    display this help and exit\n");
+    }
 
    int main(int argc, char *argv[]) {
 
     int opt;
     int version_number = 0;
 
-    char *input_file = NULL;
-    char *output_file = NULL;
+    const char *input_file = NULL;
+    const char *output_file = NULL;
 
     int key = 0;
     int iv = 0;
 
 
     //define acceptable options
-     static struct option long_opt[] =
+     static const struct option long_opt[] =
     {
             {"version", required_argument, NULL, 'V'},
             {"benchmark", optional_argument, NULL, 'B'},
@@ -129,7 +145,7 @@
          case 'V':
             version_number = atoi(optarg);
             if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
-                print_error("main", "Invalid version number. Please see the help page for more information");
+                printf("Invalid version number. Please see the help page for more information");
                 exit(EXIT_FAILURE);
             }
             break;
@@ -154,3 +170,6 @@
     }
 
 }
+
+}
+
