@@ -5,7 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
+
+//how many implementations are there?
 #define IMPLEMENTATION_MAX 1
 
 
@@ -34,7 +37,7 @@
       }
 
 
-      if(string = malloc(sb.st_size + 1)){ //st_size does not count the null byte
+      if((string = malloc(sb.st_size + 1))){ //st_size does not count the null byte
         perror("Error in allocating memory");
         goto cleanup;
       }
@@ -87,7 +90,65 @@
 
 
     void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+        size_t coreCounter = mlen / 64;
+      if (mlen % 64 != 0)
+      {
+        coreCounter++;
+      }
+      uint32_t inputMatrix[16];
+      uint32_t outputMatrix[16];
+      uint32_t *outputPointer = outputMatrix;
 
+      //Assigning const values
+      inputMatrix[0]=0x61707865;
+      inputMatrix[5]=0x3320646e;
+      inputMatrix[10]=0x79622d32;
+      inputMatrix[15]=0x6b206574;
+      //Assigning key values
+      inputMatrix[1]=key[0];
+      inputMatrix[2]=key[1];
+      inputMatrix[3]=key[2];
+      inputMatrix[4]=key[3];
+      inputMatrix[11]=key[4];
+      inputMatrix[12]=key[5];
+      inputMatrix[13]=key[6];
+      inputMatrix[14]=key[7];
+      //Assigning nonce values
+      inputMatrix[6]=iv & 0xFFFFFFFF;
+      inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
+      //Counter value in key
+      uint64_t keyCounter = 0;
+      for (size_t i = 0; i < coreCounter; i++)
+      {
+        //Assigning C0 and C1
+        inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+        inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
+
+        //outputMatrix contains output of core
+        salsa20_core_1(outputMatrix,inputMatrix);
+
+        //initializing key for each byte and pointer to outputMatrix
+        char keyByte;
+        char *keyPointer = (char*)outputPointer;
+        if (coreCounter == 0) //if mlen < 64
+        {
+          for (size_t j = 0; j < mlen; j++)
+          {
+            keyByte = *keyPointer;
+            cipher[j] = msg[j] ^ keyByte;
+            keyPointer++;
+          }
+          
+        } else { //if mlen >=64
+          for (size_t j = 0; j < 64; j++)
+          {
+            keyByte = *keyPointer;
+            cipher[j] = msg[j] ^ keyByte;
+            keyPointer++;
+          }
+        }
+        keyCounter++;
+      }
     }
 
 
@@ -98,21 +159,35 @@
    //TODO: Benchmarking framework
 
 
+    //a function to write help message
+    
+    //optional: beautify the help message
+    void printHelp() {
+        printf("TODO: \n");
+        printf("Encrypts the input file using the Salsa20 stream cipher\n");
+        printf("using the provided key and nonce / initial vector\n");
+        printf("");
+        printf("  -V, --version=VERSION_NUMBER  use the implementation with the given version number\n");
+        printf("  -B, --benchmark[=FILE]        benchmark the implementation and write the results to FILE\n");
+        printf("  -k, --key=KEY                 use KEY as the encryption key\n");
+        printf("  -i, --init_vector=IV          use IV as the initialisation vector\n");
+        printf("  -h, --help                    display this help and exit\n");
+    }
 
    int main(int argc, char *argv[]) {
 
     int opt;
     int version_number = 0;
 
-    char *input_file = NULL;
-    char *output_file = NULL;
+    const char *input_file = NULL;
+    const char *output_file = NULL;
 
     int key = 0;
     int iv = 0;
 
 
     //define acceptable options
-     static struct option long_opt[] =
+     static const struct option long_opt[] =
     {
             {"version", required_argument, NULL, 'V'},
             {"benchmark", optional_argument, NULL, 'B'},
@@ -130,7 +205,7 @@
          case 'V':
             version_number = atoi(optarg);
             if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
-                print_error("main", "Invalid version number. Please see the help page for more information");
+                printf("Invalid version number. Please see the help page for more information");
                 exit(EXIT_FAILURE);
             }
             break;
@@ -155,3 +230,6 @@
     }
 
 }
+
+}
+
