@@ -1,10 +1,45 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #define IMPLEMENTATION_MAX 1
 
-int main(int argc, char *argv[]) {
+
+   //TODO: Open and read from file and return pointer
+
+
+   
+   //TODO: Write to a file 
+
+
+
+
+   //TODO: Naive C implementation without intrinsics
+
+
+    void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
+     
+     
+
+    }
+
+
+    void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+
+       
+    }
+
+
+   //TODO: C implementation with intrinsics
+
+   //TODO: C and assembly implementation with SIMD (main inplementation)
+
+   //TODO: Benchmarking framework
+
+
+
+   int main(int argc, char *argv[]) {
 
     int opt;
     int version_number = 0;
