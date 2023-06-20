@@ -101,7 +101,7 @@
 
 
     //a function to write help message
-    //testing
+    //test
     //optional: beautify the help message
     void printHelp() {
         printf("TODO: \n");
