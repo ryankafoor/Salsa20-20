@@ -158,7 +158,11 @@
 
 
     //a function to write help message
+<<<<<<< HEAD
     
+=======
+    //test
+>>>>>>> 4dd7a9a50af782cc2dae960227b0e861fb370c79
     //optional: beautify the help message
     void printHelp() {
         printf("TODO: \n");
