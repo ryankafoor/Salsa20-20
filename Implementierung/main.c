@@ -9,7 +9,6 @@
 #define IMPLEMENTATION_MAX 1
 
 
-   //TODO: Open and read from file and return pointer
 
    char* read_file(const char* path) {
       
@@ -58,7 +57,7 @@
    }
    
    
-   //TODO: Write to a file 
+
 
    void write_file (const char* path, const char* string){
         
@@ -82,7 +81,7 @@
 
 
     void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
-        
+
     }
 
 
