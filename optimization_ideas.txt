@@ -1,4 +1,5 @@
 1. Ensuring memory allignment while using SIMD to reduce memory accesses 
-2. Loop tiling or loop blocking in transpose function
+2. Loop tiling or loop blocking in transpose function (This however needs to be discussed, 
+as this may not be suitable for our purpose and may not be more efficient)
 
 (*Feel free to add on*)
