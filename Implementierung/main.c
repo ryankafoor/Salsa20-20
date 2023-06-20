@@ -89,7 +89,64 @@
 
 
     void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+        size_t coreCounter = mlen / 64;
+      if (mlen % 64 != 0)
+      {
+        coreCounter++;
+      }
+      uint32_t inputMatrix[16];
+      uint32_t outputMatrix[16];
 
+      //Assigning const values
+      inputMatrix[0]=0x61707865;
+      inputMatrix[5]=0x3320646e;
+      inputMatrix[10]=0x79622d32;
+      inputMatrix[15]=0x6b206574;
+      //Assigning key values
+      inputMatrix[1]=key[0];
+      inputMatrix[2]=key[1];
+      inputMatrix[3]=key[2];
+      inputMatrix[4]=key[3];
+      inputMatrix[11]=key[4];
+      inputMatrix[12]=key[5];
+      inputMatrix[13]=key[6];
+      inputMatrix[14]=key[7];
+      //Assigning nonce values
+      inputMatrix[6]=iv & 0xFFFFFFFF;
+      inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
+      //Counter value in key
+      uint64_t keyCounter = 0;
+      for (size_t i = 0; i < coreCounter; i++)
+      {
+        //Assigning C0 and C1
+        inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+        inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
+
+        //outputMatrix contains output of core
+        salsa20_core_1(outputMatrix,inputMatrix);
+
+        //initializing key for each byte and pointer to outputMatrix
+        char keyByte;
+        char *keyPointer = (char*)*outputMatrix;
+        if (coreCounter == 0) //if mlen < 64
+        {
+          for (size_t j = 0; j < mlen; j++)
+          {
+            keyByte = *keyPointer;
+            cipher[j] = msg[j] ^ keyByte;
+            keyPointer++;
+          }
+          
+        } else { //if mlen >=64
+          for (size_t j = 0; j < 64; j++)
+          {
+            keyByte = *keyPointer;
+            cipher[j] = msg[j] ^ keyByte;
+            keyPointer++;
+          }
+        }
+        keyCounter++;
+      }
     }
 
 
@@ -101,7 +158,7 @@
 
 
     //a function to write help message
-    //testing
+    
     //optional: beautify the help message
     void printHelp() {
         printf("TODO: \n");
