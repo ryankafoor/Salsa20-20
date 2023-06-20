@@ -101,11 +101,7 @@
 
 
     //a function to write help message
-<<<<<<< HEAD
     //testing
-=======
-    //test
->>>>>>> c1936a5bb68c2528ac9f06d2d55c5bf69460e0bb
     //optional: beautify the help message
     void printHelp() {
         printf("TODO: \n");
