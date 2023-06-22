@@ -44,7 +44,7 @@ static const uint32_t const4 = 0x6b206574;
         goto cleanup;
       }
 
-      if(fread(string, 1, sb.st_size, file) != (size_t) sb. st_size){  //fread fails when return value not equal to elements read  
+      if(fread(string, 1, sb.st_size, file) != (size_t) sb. st_size){  //fread failed when return value not equal to elements read  
         perror("Error reading file");
         free(string); 
         string=NULL; 
@@ -63,13 +63,13 @@ static const uint32_t const4 = 0x6b206574;
    
    
 
-
+   
    void write_file (const char* path, const char* string){
         
         FILE* file;
         
         if(!(file = fopen(path, "w"))) {
-            perror("An error occurred while openingthe  file");
+            perror("An error occurred while opening the file");
             return;
         }
 
@@ -86,6 +86,7 @@ static const uint32_t const4 = 0x6b206574;
 
 
     void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
+
 
     }
 
