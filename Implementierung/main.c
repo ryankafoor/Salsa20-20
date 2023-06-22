@@ -229,13 +229,11 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     
 }
 
-uint8_t* test(uint8_t *toEncrypt){
+uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   //These two values we can alter
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
   uint64_t iv = 231;
   //
-  size_t mlen = strlen((char*)toEncrypt);
-
   uint8_t *cipher = malloc(mlen);
   if (!cipher)
   {
@@ -335,10 +333,10 @@ int main(int argc, char *argv[]) {
 
   }
   //msg we can alter
-  uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  //uint8_t *msg = (uint8_t*)"hello";
-  uint8_t *encrypted = test(msg);
-  test(encrypted);
+  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  uint8_t *msg = (uint8_t*)"hellohellohellohellohellohellohellohello";
+  uint8_t *encrypted = test(msg,strlen(msg));
+  test(encrypted,strlen(msg));
   
 }
 
