@@ -10,8 +10,10 @@
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
-
-
+static const uint32_t const1 = 0x61707865;
+static const uint32_t const2 = 0x3320646e;
+static const uint32_t const3 = 0x79622d32;
+static const uint32_t const4 = 0x6b206574;
 
    char* read_file(const char* path) {
       
@@ -171,10 +173,10 @@
       
       
       //Assigning const values
-      inputMatrix[0]=0x61707865;
-      inputMatrix[5]=0x3320646e;
-      inputMatrix[10]=0x79622d32;
-      inputMatrix[15]=0x6b206574;
+      inputMatrix[0]=const1;
+      inputMatrix[5]=const2;
+      inputMatrix[10]=const3;
+      inputMatrix[15]=const4;
       //Assigning key values
       inputMatrix[1]=key[0];
       inputMatrix[2]=key[1];
