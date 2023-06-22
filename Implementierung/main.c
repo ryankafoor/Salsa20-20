@@ -149,7 +149,7 @@ void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
     output[10] = rotate_bits_1((output[6] + output[2]), 18) ^ output[10];       
     output[15] = rotate_bits_1((output[11] + output[7]), 18) ^ output[15];
   
-    transponse(output);
+    transponse_1(output);
   }
 
   for (uint8_t i = 0; i < 16; i++)
