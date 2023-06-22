@@ -218,10 +218,10 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     salsa20_core_1(outputMatrix,inputMatrix);
     
     //Check values of OutputMatrix
-    printf("Output Matrix :\n");
-    for ( int x = 0 ; x < 16 ; x++){
-      printf("%u\n",outputMatrix[x]);
-    }
+    //printf("Output Matrix :\n");
+    //for ( int x = 0 ; x < 16 ; x++){
+      //printf("%u\n",outputMatrix[x]);
+    //}
     char keyByte;
     char *keyPointer = (char*)outputPointer;
     for (size_t j = 0; j < restChar; j++)
@@ -230,22 +230,34 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
         cipher[j] = msg[j] ^ keyByte;
         keyPointer++;
       } 
-
     }
     
 }
 
-void test(uint8_t *toEncrypt){
+uint8_t* test(uint8_t *toEncrypt){
+  //These two values we can alter
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
-  uint64_t iv = 12345678;
+  uint64_t iv = 231;
+  //
   size_t mlen = strlen((char*)toEncrypt);
 
-  uint8_t cipher[mlen];
-
-  salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
-  printf("Message length : %zu\n",mlen);
-  printf("Ciphertext : %s\n",cipher);
+  uint8_t *cipher = malloc(mlen);
+  if (!cipher)
+  {
+    perror("Error allocating memory for Cipher");
+    free(cipher);
+    EXIT_FAILURE;
+  }
   
+  salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
+  
+  printf("Message length : %zu\n",mlen);
+
+  for (size_t i = 0; i < mlen; i++)
+  {
+  printf("Ciphertext : %u\n",cipher[i]);
+  }
+  return cipher;
 }
 
 
@@ -327,8 +339,10 @@ int main(int argc, char *argv[]) {
     }
 
   }
-  char *blabla = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-  test((uint8_t*)blabla);
+  //msg we can alter
+  uint8_t *msg = (uint8_t*) "Hey i just wanna test";
+  uint8_t *encrypted = test(msg);
+  test(encrypted);
   
 }
 
