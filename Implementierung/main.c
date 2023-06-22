@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include "intrinsic_impl.c"
 
 
 //how many implementations are there?
@@ -83,12 +84,13 @@ void write_file (const char* path, const char* string){
 
 
 
+//Rotate function
 uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
 
 //naive as possible
-void transponse( uint32_t array[16]){
+void transponse_1( uint32_t array[16]){
 
   uint32_t temp[16];
 
@@ -116,7 +118,7 @@ void transponse( uint32_t array[16]){
 }
 
 
-//TODO: Naive C implementation without intrinsics
+//Naive C implementation without intrinsics
 
 
 void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
