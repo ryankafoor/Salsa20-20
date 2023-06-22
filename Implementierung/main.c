@@ -243,7 +243,7 @@ void test(uint8_t *toEncrypt){
   uint8_t cipher[mlen];
 
   salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
-  printf("Message length : %u\n",mlen);
+  printf("Message length : %zu\n",mlen);
   printf("Ciphertext : %s\n",cipher);
   
 }
@@ -328,7 +328,7 @@ int main(int argc, char *argv[]) {
 
   }
   char *blabla = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-  test(blabla);
+  test((uint8_t*)blabla);
   
 }
 
