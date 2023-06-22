@@ -149,7 +149,7 @@ void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
     output[10] = rotate_bits_1((output[6] + output[2]), 18) ^ output[10];       
     output[15] = rotate_bits_1((output[11] + output[7]), 18) ^ output[15];
   
-    transponse(output);
+    transponse_1(output);
   }
 
   for (uint8_t i = 0; i < 16; i++)
@@ -165,14 +165,10 @@ void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
 void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
   
   size_t coreCounter = mlen / 64;
-  if (mlen % 64 != 0)
-  {
-    coreCounter++;
-  }
+  size_t restChar = mlen % 64;
   uint32_t inputMatrix[16];
   uint32_t outputMatrix[16];
   uint32_t *outputPointer = outputMatrix;
-  
   
   //Assigning const values
   inputMatrix[0]=const1;
@@ -193,37 +189,63 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
   inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
   //Counter value in key
   uint64_t keyCounter = 0;
-  for (size_t i = 0; i < coreCounter; i++)
-  {
+
+    for (size_t i = 0; i < coreCounter; i++)
+    {
     //Assigning C0 and C1
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
-
+    
     //outputMatrix contains output of core
     salsa20_core_1(outputMatrix,inputMatrix);
 
     //initializing key for each byte and pointer to outputMatrix
     char keyByte;
     char *keyPointer = (char*)outputPointer;
-    if (coreCounter == 0) //if mlen < 64
-    {
-      for (size_t j = 0; j < mlen; j++)
-      {
-        keyByte = *keyPointer;
-        cipher[j] = msg[j] ^ keyByte;
-        keyPointer++;
-      }
-      
-    } else { //if mlen >=64
       for (size_t j = 0; j < 64; j++)
       {
         keyByte = *keyPointer;
         cipher[j] = msg[j] ^ keyByte;
         keyPointer++;
-      }
-    }
+      }    
     keyCounter++;
-  }
+    }
+    if (restChar != 0)
+    {
+    inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+    inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
+
+    salsa20_core_1(outputMatrix,inputMatrix);
+    
+    //Check values of OutputMatrix
+    printf("Output Matrix :\n");
+    for ( int x = 0 ; x < 16 ; x++){
+      printf("%u\n",outputMatrix[x]);
+    }
+    char keyByte;
+    char *keyPointer = (char*)outputPointer;
+    for (size_t j = 0; j < restChar; j++)
+      {
+        keyByte = *keyPointer;
+        cipher[j] = msg[j] ^ keyByte;
+        keyPointer++;
+      } 
+
+    }
+    
+}
+
+void test(uint8_t *toEncrypt){
+  uint32_t key[8] = {1,2,3,4,5,6,7,8};
+  uint64_t iv = 12345678;
+  size_t mlen = strlen((char*)toEncrypt);
+
+  uint8_t cipher[mlen];
+
+  salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
+  printf("Message length : %u\n",mlen);
+  printf("Ciphertext : %s\n",cipher);
+  
 }
 
 
@@ -305,6 +327,8 @@ int main(int argc, char *argv[]) {
     }
 
   }
-
+  char *blabla = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+  test(blabla);
+  
 }
 
