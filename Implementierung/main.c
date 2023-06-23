@@ -177,7 +177,8 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
 
   uint32_t inputMatrix[16];
   uint32_t outputMatrix[16];
-  uint32_t *outputPointer = outputMatrix;
+
+  uint8_t *charPointer = (uint8_t*)outputMatrix;
   
   //Assigning const values
   inputMatrix[0]=const1;
@@ -212,8 +213,8 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     
       for (size_t j = 0; j < 64; j++)
       {
-        cipher[j] = msg[j] ^ *outputPointer;
-        outputPointer++;
+        cipher[j] = msg[j] ^ *charPointer;
+        charPointer++;
       }
     keyCounter++;
     }
@@ -230,8 +231,8 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     //}
     for (size_t j = coreCounter*64; j < mlen; j++)
       {
-        cipher[j] = msg[j] ^ *outputPointer;
-        outputPointer++;
+        cipher[j] = msg[j] ^ *charPointer;
+        charPointer++;
       } 
     }
     
@@ -366,8 +367,8 @@ int main(int argc, char *argv[]) {
   */
 
   //msg we can alter
-  uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  //uint8_t *msg = (uint8_t*)"hellohellohellohellohellohellohellohellohellohellohellohellohello";
+  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  uint8_t *msg = (uint8_t*)"hello123@#%^*(*";
   size_t msgLen = strlen((char*)msg);
   printf("Original Message :\n");
   for (size_t i = 0; i < msgLen; i++)
@@ -377,7 +378,12 @@ int main(int argc, char *argv[]) {
   printf("\n");
   //check
   uint8_t *encrypted = test(msg,msgLen);
-  
+  printf("Encrypted Message :\n");
+  for (size_t i = 0; i < msgLen; i++)
+  {
+  printf("index %zu: %u\n",i ,encrypted[i]);
+  }
+  printf("\n");
   // check if the decrypted message matches the original message
   uint8_t *decrypted = test(encrypted,msgLen);
   printf("Decrypted Message :\n");
