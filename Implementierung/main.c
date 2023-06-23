@@ -177,7 +177,6 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
   
   size_t coreCounter = mlen / 64;
 
-
   size_t restChar = mlen % 64;
 
   uint32_t inputMatrix[16];
@@ -205,8 +204,8 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
   //Counter value in key
   uint64_t keyCounter = 0;
 
-    for (size_t i = 0; i < coreCounter; i++)
-    {
+  for (size_t i = 0; i < coreCounter; i++)
+  {
     //Assigning C0 and C1
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
@@ -235,9 +234,10 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
       
     keyCounter++;
     charPointer = (uint8_t*)outputMatrix;
-    }
-    if (restChar != 0)
-    {
+  }
+
+  if (restChar != 0)
+  {
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 
@@ -248,11 +248,11 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
       //printf("%u\n",outputMatrix[x]);
     //}
     for (size_t j = coreCounter*64; j < mlen; j++)
-      {
-        cipher[j] = msg[j] ^ *charPointer;
-        charPointer++;
-      } 
-    }
+    {
+      cipher[j] = msg[j] ^ *charPointer;
+      charPointer++;
+    } 
+  }
     
 }
 
@@ -387,8 +387,8 @@ int main(int argc, char *argv[]) {
   */
 
   //msg we can alter
-  uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  //uint8_t *msg = (uint8_t*)"hello123@#%^*(*";
+  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  uint8_t *msg = (uint8_t*)"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.156464";
   size_t msgLen = strlen((char*)msg);
   printf("Original Message :\n");
   for (size_t i = 0; i < msgLen; i++)
