@@ -23,7 +23,7 @@ char* read_file(const char* path) {
   FILE* file;
   
   if(!(file = fopen(path, "r")))  {
-    perror("An error occurred while openingthe  file");
+    perror("An error occurred while opening the file");
     goto cleanup;
   }
 
@@ -250,14 +250,7 @@ uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   }
   
   salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
-  
-  printf("Message length : %zu\n",mlen);
 
-  for (size_t i = 0; i < mlen; i++)
-  {
-  printf("Ciphertext %u: %u\n",i ,cipher[i]);
-  }
-  free(cipher);
   return cipher;
 }
 
@@ -373,19 +366,35 @@ int main(int argc, char *argv[]) {
   */
 
   //msg we can alter
-  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  uint8_t *msg = (uint8_t*)"hellohellohellohellohellohellohellohello";
-  uint8_t *encrypted = test(msg,strlen(msg));
-
+  uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  //uint8_t *msg = (uint8_t*)"hellohellohellohellohellohellohellohellohellohellohellohellohello";
+  size_t msgLen = strlen((char*)msg);
+  printf("Original Message :\n");
+  for (size_t i = 0; i < msgLen; i++)
+  {
+  printf("index %zu: %u\n",i ,msg[i]);
+  }
+  printf("\n");
+  //check
+  uint8_t *encrypted = test(msg,msgLen);
+  
   // check if the decrypted message matches the original message
-  uint8_t *decrypted = test(encrypted,strlen(msg));
+  uint8_t *decrypted = test(encrypted,msgLen);
+  printf("Decrypted Message :\n");
+  for (size_t i = 0; i < msgLen; i++)
+  {
+  printf("index %zu: %u\n",i ,decrypted[i]);
+  }
+  printf("\n");
 
-  if(memcmp(msg, decrypted, strlen(msg)) != 0) {
+  if(memcmp(msg, decrypted, msgLen) != 0) {
       printf("Decryption failed.\n");
       return EXIT_FAILURE;
     }
   printf("Decryption succeeded.\n");
-
+  free(encrypted);
+  free(decrypted);
+  
   /*
   ==========================================
    TEST CODE in main END
