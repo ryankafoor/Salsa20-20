@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "intrinsic_impl.c"
+#include "time.h"
 
 
 //how many implementations are there?
@@ -21,7 +22,7 @@ char* read_file(const char* path) {
   char* string = NULL;
   FILE* file;
   
-  if(!(file = fopen(path, "r"))) {
+  if(!(file = fopen(path, "r")))  {
     perror("An error occurred while openingthe  file");
     goto cleanup;
   }
@@ -40,7 +41,7 @@ char* read_file(const char* path) {
   }
 
 
-  if((string = malloc(sb.st_size + 1))){ //st_size does not count the null byte
+  if((string = malloc(sb.st_size + 1)) == NULL){ //st_size does not count the null byte
     perror("Error in allocating memory");
     goto cleanup;
   }
@@ -56,7 +57,10 @@ char* read_file(const char* path) {
 
   cleanup:
       if (file){
-        fclose(file);
+        if((fclose(file)) == EOF) { 
+          perror("Error closing file");
+          exit(EXIT_FAILURE);
+        }
       }
 
   return string;
@@ -71,14 +75,18 @@ void write_file (const char* path, const char* string){
     
     if(!(file = fopen(path, "w"))) {
         perror("An error occurred while opening the file");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     if(fwrite(string, 1, strlen(string), file) != strlen(string)){
         perror("Error writing to file");
+        exit(EXIT_FAILURE);
     }
 
-    fclose(file);
+    if((fclose(file)) == EOF) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
 
 }
 
@@ -234,12 +242,11 @@ uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
   uint64_t iv = 231;
   //
-  uint8_t *cipher = malloc(mlen);
-  if (!cipher)
+  uint8_t *cipher = malloc(mlen*sizeof(uint8_t));
+  if (cipher==NULL)
   {
-    perror("Error allocating memory for Cipher");
-    free(cipher);
-    EXIT_FAILURE;
+    perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
+    exit(EXIT_FAILURE);
   }
   
   salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
@@ -248,8 +255,9 @@ uint8_t* test(uint8_t *toEncrypt, size_t mlen){
 
   for (size_t i = 0; i < mlen; i++)
   {
-  printf("Ciphertext : %u\n",cipher[i]);
+  printf("Ciphertext %u: %u\n",i ,cipher[i]);
   }
+  free(cipher);
   return cipher;
 }
 
@@ -261,11 +269,10 @@ uint8_t* test(uint8_t *toEncrypt, size_t mlen){
    //TODO: Benchmarking framework
 
 
-    //a function to write help message
-    
-    //optional: beautify the help message
+//a function to write help messages
+//optional: beautify the help message
 void printHelp() {
-    printf("TODO: \n");
+    printf("TODO: complete the help message\n");
     printf("Encrypts the input file using the Salsa20 stream cipher\n");
     printf("using the provided key and nonce / initial vector\n");
     printf("");
@@ -287,6 +294,8 @@ int main(int argc, char *argv[]) {
   int key = 0;
   int iv = 0;
 
+  clock_t start;
+  clock_t end;
 
   //define acceptable options
   static const struct option long_opt[] =
@@ -321,22 +330,68 @@ int main(int argc, char *argv[]) {
           output_file = optarg;
           break;
       
-        case 'k':
-          
+      case 'k':
+          key = atoi(optarg);
           break;
 
       case 'i':
-          
+          iv = atoi(optarg);
           break;
+
+      case 'B':
+        /*
+        alternatively, use -B to set a benchmarking flag and call the function in another switch statement below
+        advantage: only one block of code for running the code with or without benchmarking.
+
+        TODO: do this instead
+        */
+
+        // Perform benchmarking when -B or --benchmark is used
+        start = clock();
+        
+        // Call the function(s) depending on the version
+        //TODO
+
+        end = clock();
+        double time_taken = ((double)end - start) / CLOCKS_PER_SEC; 
+        printf("The operation took %f seconds to execute \n", time_taken);
+        break;
+
+      default:
+          printf("Unknown option: %c\n", optopt);
+          return EXIT_FAILURE;
       //TODO: finish cases, add error handling, etc-..
     }
 
   }
+
+
+  /*
+  ==========================================
+   TEST CODE in main
+  ==========================================
+  */
+
   //msg we can alter
   //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   uint8_t *msg = (uint8_t*)"hellohellohellohellohellohellohellohello";
   uint8_t *encrypted = test(msg,strlen(msg));
-  test(encrypted,strlen(msg));
-  
+
+  // check if the decrypted message matches the original message
+  uint8_t *decrypted = test(encrypted,strlen(msg));
+
+  if(memcmp(msg, decrypted, strlen(msg)) != 0) {
+      printf("Decryption failed.\n");
+      return EXIT_FAILURE;
+    }
+  printf("Decryption succeeded.\n");
+
+  /*
+  ==========================================
+   TEST CODE in main END
+  ==========================================
+  */
+
+  return EXIT_SUCCESS;
 }
 
