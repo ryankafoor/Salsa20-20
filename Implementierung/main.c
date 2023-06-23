@@ -6,8 +6,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <xmmintrin.h>
+#include <emmintrin.h>
 #include "intrinsic_impl.c"
 #include "time.h"
+
 
 
 //how many implementations are there?
@@ -173,6 +176,8 @@ void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
 void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
   
   size_t coreCounter = mlen / 64;
+
+
   size_t restChar = mlen % 64;
 
   uint32_t inputMatrix[16];
@@ -210,13 +215,26 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     salsa20_core_1(outputMatrix,inputMatrix);
 
     //initializing key for each byte and pointer to outputMatrix
-    
       for (size_t j = 0; j < 64; j++)
       {
-        cipher[j] = msg[j] ^ *charPointer;
+        cipher[i*64+j] = msg[i*64+j] ^ *charPointer;
         charPointer++;
       }
+      /*
+      ============ SIMD APPROACH ============
+      */
+      //for (size_t simdCounter = 0; simdCounter < 4; simdCounter++)
+      //{
+      //__m128i simdReg1 = _mm_loadu_si128((__m128i_u *)msg);
+      //__m128i simdReg2 = _mm_loadu_si128((__m128i_u *)outputMatrix);
+
+      //}
+      /*
+      =======================================
+      */
+      
     keyCounter++;
+    charPointer = (uint8_t*)outputMatrix;
     }
     if (restChar != 0)
     {
@@ -237,6 +255,8 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
     }
     
 }
+
+
 
 uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   //These two values we can alter
@@ -367,8 +387,8 @@ int main(int argc, char *argv[]) {
   */
 
   //msg we can alter
-  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  uint8_t *msg = (uint8_t*)"hello123@#%^*(*";
+  uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  //uint8_t *msg = (uint8_t*)"hello123@#%^*(*";
   size_t msgLen = strlen((char*)msg);
   printf("Original Message :\n");
   for (size_t i = 0; i < msgLen; i++)
