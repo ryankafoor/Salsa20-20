@@ -1,9 +1,9 @@
-CFLAGS = -O0
+CFLAGS = -O0 #Options can be added here 
 
 all: main
 main: main.c
   $(CC) $(CFLAGS) -o $@ $^
- #Options can be added here 
+  
 clean:
   rm -f main
 
