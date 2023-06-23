@@ -214,7 +214,7 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
       {
         cipher[j] = msg[j] ^ *outputPointer;
         outputPointer++;
-      }    
+      }
     keyCounter++;
     }
     if (restChar != 0)
