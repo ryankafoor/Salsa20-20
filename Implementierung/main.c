@@ -98,13 +98,13 @@ static void write_file (const char* path, const char* string){
 
 
 //Rotate function
-__attribute__((hot))
+
 static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
 
 //naive as possible
-__attribute__((hot))
+
 static void transponse_1( uint32_t array[16]){
 
   uint32_t temp[16];
@@ -183,6 +183,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 
   size_t restChar = mlen % 64;
 
+  
   uint32_t inputMatrix[16];
   uint32_t outputMatrix[16];
 
