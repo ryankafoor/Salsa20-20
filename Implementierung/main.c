@@ -15,6 +15,8 @@
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
+
+//comment what these constants are
 static const uint32_t const1 = 0x61707865;
 static const uint32_t const2 = 0x3320646e;
 static const uint32_t const3 = 0x79622d32;
@@ -72,7 +74,7 @@ static char* read_file(const char* path) {
    
 
    
-void write_file (const char* path, const char* string){
+static void write_file (const char* path, const char* string){
     
     FILE* file;
     
@@ -96,12 +98,14 @@ void write_file (const char* path, const char* string){
 
 
 //Rotate function
-uint32_t rotate_bits_1(uint32_t number, uint8_t i){
+__attribute__((hot))
+static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
 
 //naive as possible
-void transponse_1( uint32_t array[16]){
+__attribute__((hot))
+static void transponse_1( uint32_t array[16]){
 
   uint32_t temp[16];
 
@@ -132,7 +136,7 @@ void transponse_1( uint32_t array[16]){
 //Naive C implementation without intrinsics
 
 
-void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
+static void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
 
   for (int i = 0; i < 16; i++) {
     output[i] = input[i];
@@ -173,7 +177,7 @@ void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
 }
 
 
-void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
   
   size_t coreCounter = mlen / 64;
 
@@ -258,7 +262,7 @@ void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen],
 
 
 
-uint8_t* test(uint8_t *toEncrypt, size_t mlen){
+static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   //These two values we can alter
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
   uint64_t iv = 231;
@@ -285,11 +289,11 @@ uint8_t* test(uint8_t *toEncrypt, size_t mlen){
 
 //a function to write help messages
 //optional: beautify the help message
-void printHelp() {
+static void printHelp() {
     printf("TODO: complete the help message\n");
     printf("Encrypts the input file using the Salsa20 stream cipher\n");
     printf("using the provided key and nonce / initial vector\n");
-    printf("");
+    printf("placeholder to remove warning!");
     printf("  -V, --version=VERSION_NUMBER  use the implementation with the given version number\n");
     printf("  -B, --benchmark[=FILE]        benchmark the implementation and write the results to FILE\n");
     printf("  -k, --key=KEY                 use KEY as the encryption key\n");

@@ -1,11 +1,12 @@
-CFLAGS = -O0 #Options can be added here 
+CFLAGS = -O0  #Options can be added here 
 
-all: main
-main: main.c
-  $(CC) $(CFLAGS) -o $@ $^
-  
-clean:
-  rm -f main
+all: main 
+
+main: main.c  
+	$(CC) $(CFLAGS) -o $@ $^
+
+clean:  
+	rm -f main
 
 # Instructions:
 # make (makes all)
