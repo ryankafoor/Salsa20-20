@@ -9,7 +9,7 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include "intrinsic_impl.c"
-#include "time.h"
+#include <time.h>
 
 
 
@@ -20,7 +20,7 @@ static const uint32_t const2 = 0x3320646e;
 static const uint32_t const3 = 0x79622d32;
 static const uint32_t const4 = 0x6b206574;
 
-char* read_file(const char* path) {
+static char* read_file(const char* path) {
   
   char* string = NULL;
   FILE* file;
@@ -387,17 +387,38 @@ int main(int argc, char *argv[]) {
   */
 
   //msg we can alter
-  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  uint8_t *msg = (uint8_t*)"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.156464";
+  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDE";
+  //uint8_t *msg = (uint8_t*)"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.156464";
+  
+  char* msg = read_file("input.txt");
+  if(!msg){
+    printf("Failure in reading from file\n");
+    return EXIT_FAILURE;
+  } 
   size_t msgLen = strlen((char*)msg);
+
+  /*
   printf("Original Message :\n");
   for (size_t i = 0; i < msgLen; i++)
   {
   printf("index %zu: %u\n",i ,msg[i]);
   }
+  */
   printf("\n");
   //check
+
+  struct timespec start_time;
+  struct timespec end_time;
+
+  clock_gettime(CLOCK_MONOTONIC,&start_time);
+
   uint8_t *encrypted = test(msg,msgLen);
+
+  clock_gettime(CLOCK_MONOTONIC, &end_time);
+
+  double time = end_time.tv_sec - start_time.tv_sec + 1e-9*(end_time.tv_nsec - start_time.tv_nsec);
+  double time_for_one_byte = time / msgLen;
+/*
   printf("Encrypted Message :\n");
   for (size_t i = 0; i < msgLen; i++)
   {
@@ -405,14 +426,18 @@ int main(int argc, char *argv[]) {
   }
   printf("\n");
   // check if the decrypted message matches the original message
+  */
   uint8_t *decrypted = test(encrypted,msgLen);
+
+  write_file("output.txt",decrypted);
+  /*
   printf("Decrypted Message :\n");
   for (size_t i = 0; i < msgLen; i++)
   {
   printf("index %zu: %u\n",i ,decrypted[i]);
   }
   printf("\n");
-
+*/
   if(memcmp(msg, decrypted, msgLen) != 0) {
       printf("Decryption failed.\n");
       return EXIT_FAILURE;
@@ -420,6 +445,10 @@ int main(int argc, char *argv[]) {
   printf("Decryption succeeded.\n");
   free(encrypted);
   free(decrypted);
+  
+
+  printf("Time taken for ecrypting message: %f\n", time);
+  printf("Average time for one byte: %f\n", time_for_one_byte);
   
   /*
   ==========================================
