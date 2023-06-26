@@ -17,6 +17,7 @@
 #define IMPLEMENTATION_MAX 1
 
 //comment what these constants are
+
 static const uint32_t const1 = 0x61707865;
 static const uint32_t const2 = 0x3320646e;
 static const uint32_t const3 = 0x79622d32;
@@ -239,7 +240,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
       */
       
     keyCounter++;
-    //charPointer = (uint8_t*)outputMatrix;
+    charPointer = (uint8_t*)outputMatrix;
   }
 
   if (restChar != 0)
@@ -247,7 +248,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 
-    salsa20_core_1(outputMatrix,inputMatrix);
+    salsa20_core_2(outputMatrix,inputMatrix);
     //Check values of OutputMatrix
     //printf("Output Matrix :\n");
     //for ( int x = 0 ; x < 16 ; x++){
