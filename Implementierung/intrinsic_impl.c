@@ -149,6 +149,9 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 	inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
 
 
+    const uint8_t* msgPtr = msg;
+	uint8_t* cipherPtr = cipher;
+    
 
 	//Counter value in key
 	uint64_t keyCounter = 0;
@@ -163,7 +166,7 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 		salsa20_core_2(outputMatrix,inputMatrix);
 	
 		
-		charPointer = (uint8_t*)outputMatrix;
+		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
 		
 		/*  
@@ -175,39 +178,39 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 			void _mm256_store_si256 (__m256i * mem_addr, __m256i a);
 		*/
 
-			//msg and cipher not alligned
-			mssgInt = _mm256_loadu_si256 ((uint8_t*)&msg[i*64]);  
-			outputInt = _mm256_load_si256 ((uint8_t*)&outputMatrix[0]);
-			cipheredInt = _mm256_xor_si256 (mssgInt, outputInt);
-			_mm256_storeu_si256 ((uint8_t*)&cipher[i*64], cipheredInt);
-	 
-			mssgInt = _mm256_loadu_si256 ((uint8_t*)&msg[i*64 + 32]);
-			outputInt = _mm256_load_si256 ((uint8_t*)&outputMatrix[8]);
-			cipheredInt = _mm256_xor_si256 (mssgInt, outputInt);
-			_mm256_storeu_si256 ((uint8_t*)&cipher[i*64+32], cipheredInt);
+		//msg and cipher not alligned
+		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64));  
+		//outputInt = _mm256_load_si256 ((__m256i const*)outputPtr);
+		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr));
+		_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
+	
+		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32));
+		//outputInt = _mm256_load_si256 ((__m256i const*)(outputPtr+32));
+		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32)));
+		_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64),  _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32))) ));
 
 
 			
 			
 		
-			//maximum 256 bits can be processed parallely which contributes a speedup of 32!! 
-			
-			//supported architectures on rechnerhalle that may be of relevance to us
-			//lscpu on rechnerhalle
-			/*
-			MMX
-			SSE family
-			SSE
-			SSE2
-			SSSE3
-			SSE4.1
-			SSE4.2
-			AVX family
-			AVX
-			F16C
-			FMA
-			AVX2
-			*/
+		//maximum 256 bits can be processed parallely which contributes a speedup of 32!! 
+		
+		//supported architectures on rechnerhalle that may be of relevance to us
+		//lscpu on rechnerhalle
+		/*
+		MMX
+		SSE family
+		SSE
+		SSE2
+		SSSE3
+		SSE4.1
+		SSE4.2
+		AVX family
+		AVX
+		F16C
+		FMA
+		AVX2
+		*/
 
 			
 			
