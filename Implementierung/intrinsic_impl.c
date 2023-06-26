@@ -119,14 +119,6 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 	__attribute__((aligned(32))) 
 	uint32_t outputMatrix[16];
 
-/*
-	__attribute__((aligned(16)))
-	uint32_t inputMatrix2[16];
-
-	__attribute__((aligned(16)))
-	uint32_t outputMatrix2[16];
-*/
-
 	__m256i cipheredInt;
 	__m256i mssgInt;
 	__m256i outputInt;
@@ -155,11 +147,6 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 	//Assigning nonce values
 	inputMatrix[6]=iv & 0xFFFFFFFF;
 	inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
-/*
-	for(int i=0;i<16;i++){
-		inputMatrix2[i] = inputMatrix[i];
-	}
-*/
 
 
 
@@ -202,13 +189,7 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 
 			
 			
-		/*
-			for (size_t j = 0; j < 64; j++)
-			{
-				cipher[i*64+j] = msg[i*64+j] ^ *charPointer;
-				charPointer++;
-			}
-		*/
+		
 			//maximum 256 bits can be processed parallely which contributes a speedup of 32!! 
 			
 			//supported architectures on rechnerhalle that may be of relevance to us
@@ -234,6 +215,7 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 		keyCounter++;
 	}
 
+    
 	if (restChar != 0)
 	{
 		inputMatrix[8]=keyCounter & 0xFFFFFFFF;
@@ -243,11 +225,6 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 
 		charPointer = (uint8_t*)outputMatrix;
 
-		//Check values of OutputMatrix
-		//printf("Output Matrix :\n");
-		//for ( int x = 0 ; x < 16 ; x++){
-			//printf("%u\n",outputMatrix[x]);
-		//}
 		for (size_t j = coreCounter*64; j < mlen; j++)
 		{
 			cipher[j] = msg[j] ^ *charPointer;
