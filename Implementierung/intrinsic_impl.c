@@ -118,11 +118,11 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 	//allign forcubly with a boundary of 32 bytes
 	__attribute__((aligned(32))) 
 	uint32_t outputMatrix[16];
-
+/*
 	__m256i cipheredInt;
 	__m256i mssgInt;
 	__m256i outputInt;
-
+*/
 
 
 	uint8_t *charPointer;
