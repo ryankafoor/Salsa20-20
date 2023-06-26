@@ -98,7 +98,8 @@ static void write_file (const char* path, const char* string){
 
 
 //Rotate function
-
+//__attribute__((hot))
+//__attribute__((always_inline))
 static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
@@ -238,7 +239,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
       */
       
     keyCounter++;
-    charPointer = (uint8_t*)outputMatrix;
+    //charPointer = (uint8_t*)outputMatrix;
   }
 
   if (restChar != 0)
