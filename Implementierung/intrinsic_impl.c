@@ -3,6 +3,7 @@
 #include <immintrin.h>
 
 
+
 static const uint32_t const_int_1 = 0x61707865;
 static const uint32_t const_int_2 = 0x3320646e;
 static const uint32_t const_int_3 = 0x79622d32;
@@ -12,9 +13,9 @@ static const uint32_t const_int_4 = 0x6b206574;
 
 
 //assembly can be used here to optimize this function (rol)
-//__attribute__((hot))
+__attribute__((hot))
 //__attribute__((const))
-//__attribute__((always_inline))
+__attribute__((always_inline))
 static uint32_t rotate_bits_2(uint32_t number, uint8_t i){
 	return (number << i) | (number >> (32 -i));
 }
@@ -25,8 +26,8 @@ static uint32_t rotate_bits_2(uint32_t number, uint8_t i){
 
 //xor swap not recommended as compiler can not recognise the aim for optimization
 //https://en.wikipedia.org/wiki/XOR_swap_algorithm#Reasons_for_avoidance_in_practice:~:text=Reasons%20for%20avoidance%20in%20practice
-//__attribute__((hot))
-//__attribute__((always_inline)) 
+__attribute__((hot))
+__attribute__((always_inline)) 
 static void transponse_2( uint32_t array[16]){
 	
 
@@ -182,12 +183,14 @@ static void salsa20_crypt_2(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
 		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64));  
 		//outputInt = _mm256_load_si256 ((__m256i const*)outputPtr);
 		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr));
-		_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
+		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
 	
 		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32));
 		//outputInt = _mm256_load_si256 ((__m256i const*)(outputPtr+32));
 		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32)));
-		_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64),  _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32))) ));
+		//_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64),  _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32))) ));
+
+		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)outputPtr+32)));
 
 
 			

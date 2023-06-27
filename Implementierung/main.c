@@ -10,6 +10,48 @@
 #include <emmintrin.h>
 #include "intrinsic_impl.c"
 #include <time.h>
+//#include <malloc.h>
+
+
+
+
+
+// aligned_malloc(1000, 128) will return a memory address
+// that is a multiple of 128 and that points to memory of size 1000 bytes.
+//offset_t is a uint16_t, supports up to 64KB alignment, a size which is already unlikely to be used for alignment.
+typedef uint16_t offset_t;
+#define PTR_OFFSET_SZ sizeof(offset_t)
+
+void* aligned_malloc(size_t required_bytes, size_t alignment){
+  int offset = alignment - 1;
+  void* p_addr;
+  // we also need about 2 bytes for storing offset to get to orig malloc address during aligned_free().
+  uint32_t hdr_size = PTR_OFFSET_SZ + (alignment - 1);
+  if((p_addr = (void * ) malloc(required_bytes + hdr_size)) == NULL){
+  return NULL;
+  }
+  // a) bit-shift to move address to aligned_addr
+  //    Note that this operates on powers of two
+  //void* aligned_addr = (void * ) (((size_t)(p_addr) + offset) & ~(offset));
+  //b) OR use modulo operator to get how much to move forward
+  int move_forward = (alignment - ((size_t)p_addr % alignment));
+  void* aligned_addr= (size_t)p_addr + move_forward;
+  // store 16-bit offset instead of a 32bit or 64 bit platform address.
+  *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
+  return aligned_addr;
+}
+
+void aligned_free(void *aligned_addr ){
+  /* Find the address stored by aligned_malloc() ,"size_t" bytes above the current pointer then free it using free() API.*/
+  size_t offset = *((size_t *) aligned_addr);
+  // get to p_addr using offset and aligned_addr value and call 
+  
+  // free() on it.
+  free((void *)(*((size_t*) aligned_addr) - offset));
+}
+
+
+
 
 
 
@@ -47,7 +89,7 @@ static char* read_file(const char* path) {
   }
 
 
-  if((string = malloc(sb.st_size + 1)) == NULL){ //st_size does not count the null byte
+  if((string = aligned_malloc(sb.st_size + 1,32)) == NULL){ //st_size does not count the null byte
     perror("Error in allocating memory");
     goto cleanup;
   }
@@ -270,14 +312,14 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
   uint64_t iv = 231;
   //
-  uint8_t *cipher = malloc(mlen*sizeof(uint8_t));
+  uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
   if (cipher==NULL)
   {
     perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
     exit(EXIT_FAILURE);
   }
   
-  salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
+  salsa20_crypt_2(mlen,toEncrypt,cipher,key,iv);
 
   return cipher;
 }
@@ -450,8 +492,11 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
   printf("Decryption succeeded.\n");
-  free(encrypted);
-  free(decrypted);
+   printf("Time taken for ecrypting message: %f\n", time);
+  printf("Average time for one byte: %f\n", time_for_one_byte);
+  
+  aligned_free(encrypted);
+  aligned_free(decrypted);
   
 
   printf("Time taken for ecrypting message: %f\n", time);
