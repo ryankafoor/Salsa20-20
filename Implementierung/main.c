@@ -452,6 +452,7 @@ int main(int argc, char *argv[]) {
   {
   printf("index %zu: %u\n",i ,msg[i]);
   }
+  
   */
   printf("\n");
   //check
@@ -486,15 +487,14 @@ int main(int argc, char *argv[]) {
   printf("index %zu: %u\n",i ,decrypted[i]);
   }
   printf("\n");
+
 */
   if(memcmp(msg, decrypted, msgLen) != 0) {
       printf("Decryption failed.\n");
       return EXIT_FAILURE;
     }
   printf("Decryption succeeded.\n");
-   printf("Time taken for ecrypting message: %f\n", time);
-  printf("Average time for one byte: %f\n", time_for_one_byte);
-  
+   
   aligned_free(encrypted);
   aligned_free(decrypted);
   

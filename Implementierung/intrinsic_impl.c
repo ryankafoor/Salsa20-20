@@ -62,10 +62,6 @@ static void transponse_2( uint32_t array[16]){
 static void salsa20_core_2(uint32_t output[16], const uint32_t input[16]){
 
 
-
-
-
-
 	for (int i = 0; i < 16; i++) {
 		output[i] = input[i];
 }
