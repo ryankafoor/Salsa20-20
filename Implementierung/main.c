@@ -10,6 +10,8 @@
 #include <emmintrin.h>
 #include "intrinsic_impl.c"
 #include <time.h>
+#include "util.h"
+#include "util.c"
 //#include <malloc.h>
 
 
@@ -57,6 +59,12 @@ void aligned_free(void *aligned_addr ){
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
+#define ITERATION_MAX 10000
+#define IV_SIZE 8
+#define KEY_SIZE 16
+
+extern void transpose_asm( uint32_t array[16]);
+extern uint32_t rotate_bits_asm(uint32_t number, uint8_t i);
 
 //comment what these constants are
 
@@ -348,18 +356,20 @@ static void printHelp() {
 }
 
 int main(int argc, char *argv[]) {
-
-  int opt;
-  int version_number = 0;
-
+ int opt;
   const char *input_file = NULL;
   const char *output_file = NULL;
 
-  int key = 0;
-  int iv = 0;
+  uint32_t key[8];
+  uint64_t iv;
 
-  clock_t start;
-  clock_t end;
+  int version_number = 0;
+  int benchmark_iteration = 1;
+  int benchmark_flag = 0;
+  double avg_time;    //for benchmarking
+  clock_t start, end;
+
+  size_t mlen = 0;
 
   //define acceptable options
   static const struct option long_opt[] =
@@ -368,66 +378,121 @@ int main(int argc, char *argv[]) {
           {"benchmark", optional_argument, NULL, 'B'},
           {"key", required_argument, NULL, 'k'},
           {"init_vector", required_argument, NULL, 'i'},
+          {"output", required_argument, NULL, 'o'},
           {"help", no_argument, NULL, 'h'},
           {0, 0, 0, 0}
   };
 
 
-  while ((opt = getopt_long(argc, argv, "V:B:k:i:h", long_opt, 0)) != -1)
+  while ((opt = getopt_long(argc, argv, "V:B:k:i:o:h", long_opt, 0)) != -1)
   {
       switch (opt)
       {
         case 'V':
           version_number = atoi(optarg);
+          printf("Version number: %d\n", version_number);
           if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
               printf("Invalid version number. Please see the help page for more information");
               exit(EXIT_FAILURE);
           }
           break;
-
       case 'h':
               printHelp();
               return EXIT_SUCCESS;
-          //TODO: implement printHelp()
-
       case 'o':
           output_file = optarg;
           break;
-      
+      //TODO: input file in hexadecimal? currently: decimal
       case 'k':
-          key = atoi(optarg);
+          hex_to_little_endian_32bit_array(optarg, key, 8);
           break;
-
       case 'i':
-          iv = atoi(optarg);
+      
+          hex_to_little_endian_uint64(optarg, &iv);
           break;
-
       case 'B':
-        /*
-        alternatively, use -B to set a benchmarking flag and call the function in another switch statement below
-        advantage: only one block of code for running the code with or without benchmarking.
-
-        TODO: do this instead
-        */
-
-        // Perform benchmarking when -B or --benchmark is used
-        start = clock();
-        
-        // Call the function(s) depending on the version
-        //TODO
-
-        end = clock();
-        double time_taken = ((double)end - start) / CLOCKS_PER_SEC; 
-        printf("The operation took %f seconds to execute \n", time_taken);
+        benchmark_flag = 1;
+        benchmark_iteration = strtoull(optarg, NULL, 10);
+        if(!benchmark_iteration || benchmark_iteration > ITERATION_MAX){
+            print_error("main", "Benchmark mode: invalid number of iterations. See help page with -h for more information. \n");
+            exit(EXIT_FAILURE);
+          }
         break;
-
       default:
-          printf("Unknown option: %c\n", optopt);
-          return EXIT_FAILURE;
-      //TODO: finish cases, add error handling, etc-..
+          print_error("main", "Invalid program argument. See help page with  -h for more information. \n");
+          exit(EXIT_FAILURE);
     }
-
   }
+
+  if (argv[optind] == NULL) {
+    printf("Input file missing");
+    exit(EXIT_FAILURE);
+  }
+
+  input_file = read_file(argv[optind]);
+  printf("Input file: %s\n", argv[optind]);
+  if (input_file == NULL) {
+    printf("Input file invalid");
+    exit(EXIT_FAILURE);
+  }
+
+  optind++;
+  if (optind < argc) {
+    printf("Too many arguments");
+    exit(EXIT_FAILURE);
+  }
+
+  //handle input file: extract message and message length, update mlen
+  //
+
+  mlen = get_file_length(input_file);
+  if (mlen == 0) {
+    printf("Input file empty");
+    exit(EXIT_FAILURE);
+  }
+
+  uint8_t msg2[mlen];
+  uint8_t cipher[mlen];
+
+  memcpy(msg2, input_file, mlen);
+
+  //TODO: run program according to -B, -V, -k, -o
+  if(benchmark_flag){
+    printf("Benchmarking mode using %d iterations \n ", benchmark_iteration);
+    printf("Implementation version: %d \n", version_number);
+    start = clock();
+  }
+  else{
+    printf("Implementation version: %d \n", version_number);
+  }
+  
+
+  //At this point, all inputs should be correct, and input file should be readable
+  switch(version_number) {
+    case 0:
+        for(size_t i = 0; i < benchmark_iteration - 1; i++) {
+            //TODO!: call main implementation
+        }
+        break;
+    case 1:
+        for(size_t i = 0; i < benchmark_iteration - 1; i++) {
+            //TODO!: call second implementation
+        }
+        break;
+    default:
+        printf("Version number is invalid.");
+        exit(EXIT_FAILURE);
+    }
+  
+  free(input_file);
+
+  if(benchmark_flag){
+    end = clock();
+    avg_time = (((double) (end - start)) / CLOCKS_PER_SEC) / benchmark_iteration;
+    printf("Average time taken: %f seconds \n", avg_time);
+  }
+
+  //TODO!: finish output
 
 
   /*

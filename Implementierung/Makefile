@@ -2,7 +2,9 @@ CFLAGS = -O0  -mavx2 #Options can be added here
 
 all: main 
 
+
 main: main.c rotate_bits.S
+
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:  
