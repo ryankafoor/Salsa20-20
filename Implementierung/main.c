@@ -74,7 +74,6 @@ static const uint32_t const3 = 0x79622d32;
 static const uint32_t const4 = 0x6b206574;
 
 static char* read_file(const char* path) {
-  
   char* string = NULL;
   FILE* file;
   
@@ -82,6 +81,7 @@ static char* read_file(const char* path) {
     perror("An error occurred while opening the file");
     goto cleanup;
   }
+
 
   struct stat sb; //Status buffer to check the status of file
 
@@ -102,13 +102,14 @@ static char* read_file(const char* path) {
     goto cleanup;
   }
 
+
   if(fread(string, 1, sb.st_size, file) != (size_t) sb. st_size){  //fread failed when return value not equal to elements read  
     perror("Error reading file");
     free(string); 
     string=NULL; 
     goto cleanup; 
   } 
-  
+
   string[sb.st_size] = '\0';  //append null byte at end of string
 
   cleanup:
@@ -118,7 +119,8 @@ static char* read_file(const char* path) {
           exit(EXIT_FAILURE);
         }
       }
-
+  printf("test dumb2 \n");
+  
   return string;
 }
 
@@ -365,7 +367,12 @@ int main(int argc, char *argv[]) {
 
   int version_number = 0;
   int benchmark_iteration = 1;
+
   int benchmark_flag = 0;
+  int key_flag = 0;
+  int iv_flag = 0;
+  int output_flag = 0;
+
   double avg_time;    //for benchmarking
   clock_t start, end;
 
@@ -401,14 +408,16 @@ int main(int argc, char *argv[]) {
               return EXIT_SUCCESS;
       case 'o':
           output_file = optarg;
+          output_flag = 1;
           break;
       //TODO: input file in hexadecimal? currently: decimal
       case 'k':
           hex_to_little_endian_32bit_array(optarg, key, 8);
+          key_flag = 1;
           break;
       case 'i':
-      
           hex_to_little_endian_uint64(optarg, &iv);
+          iv_flag = 1;
           break;
       case 'B':
         benchmark_flag = 1;
@@ -442,10 +451,24 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
+  if(!key_flag){
+    printf("Key missing, see help page with -h for more information");
+    exit(EXIT_FAILURE);
+  }
+  if(!iv_flag){
+    printf("Initialisation vector missing, see help page with -h for more information");
+    exit(EXIT_FAILURE);
+  }
+  if(!output_flag){
+    printf("Output file missing, see help page with -h for more information");
+    exit(EXIT_FAILURE);
+  }
+
   //handle input file: extract message and message length, update mlen
   //
-
-  mlen = get_file_length(input_file);
+  printf("test dumb3 \n");
+  mlen = strlen(input_file);
+  
   if (mlen == 0) {
     printf("Input file empty");
     exit(EXIT_FAILURE);
@@ -483,8 +506,6 @@ int main(int argc, char *argv[]) {
         printf("Version number is invalid.");
         exit(EXIT_FAILURE);
     }
-  
-  free(input_file);
 
   if(benchmark_flag){
     end = clock();
