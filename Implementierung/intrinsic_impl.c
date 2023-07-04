@@ -13,9 +13,9 @@ static const uint32_t const_int_4 = 0x6b206574;
 
 
 //assembly can be used here to optimize this function (rol)
-//__attribute__((hot))
+__attribute__((hot))
 //__attribute__((const))
-//__attribute__((always_inline))
+__attribute__((always_inline))
 static uint32_t rotate_bits_2(uint32_t number, uint8_t i){
 	return (number << i) | (number >> (32 -i));
 }
