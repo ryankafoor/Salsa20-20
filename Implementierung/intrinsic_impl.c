@@ -57,7 +57,6 @@ static void transponse_2( uint32_t array[16]){
 	array[11] = array[14];
 	array[14] = temp;
 	
-
 	
 		
 }

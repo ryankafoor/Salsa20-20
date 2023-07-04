@@ -35,7 +35,7 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
   //void* aligned_addr = (void * ) (((size_t)(p_addr) + offset) & ~(offset));
   //b) OR use modulo operator to get how much to move forward
   int move_forward = (alignment - ((size_t)p_addr % alignment));
-  void* aligned_addr= (size_t)p_addr + move_forward;
+  void* aligned_addr= (void*)((size_t)p_addr + move_forward);
   // store 16-bit offset instead of a 32bit or 64 bit platform address.
   *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
   return aligned_addr;

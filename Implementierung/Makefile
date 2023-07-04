@@ -1,4 +1,4 @@
-CFLAGS = -O0  #Options can be added here 
+CFLAGS = -O0  -mavx2 #Options can be added here 
 
 all: main 
 
