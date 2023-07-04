@@ -71,7 +71,7 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
         uint8_t byte;
         ret = sscanf(&hex[i + j * 2], "%2hhx", &byte);
         if (ret != 1) {
-            fprintf(stderr, "Error reading byte in key: %d\n", i + j * 2);
+            fprintf(stderr, "Error reading byte in key: %ld\n", i + j * 2);
             return;
         }
         word |= (uint32_t)byte << (j * 8);
