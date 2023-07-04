@@ -318,7 +318,12 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
     perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
     exit(EXIT_FAILURE);
   }
+  if (mlen < 256)
+  {
+    salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
+  }
   
+
   salsa20_crypt_2(mlen,toEncrypt,cipher,key,iv);
 
   return cipher;
