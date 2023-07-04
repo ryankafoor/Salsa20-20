@@ -68,8 +68,9 @@ static void salsa20_core_2(uint32_t output[16], const uint32_t input[16]){
 		output[i] = input[i];
 }
 
-	for (uint8_t i = 0; i < 20; i++)
+	for (uint8_t i = 0; i < 10; i++)
 	{
+		//iteration 1
 		output[4] = rotate_bits_2((output[0] + output[12]), 7) ^ output[4];
 		output[9] = rotate_bits_2((output[5] + output[1]), 7) ^ output[9];       
 		output[14] = rotate_bits_2((output[10] + output[6]), 7) ^ output[14];       
@@ -90,7 +91,29 @@ static void salsa20_core_2(uint32_t output[16], const uint32_t input[16]){
 		output[10] = rotate_bits_2((output[6] + output[2]), 18) ^ output[10];       
 		output[15] = rotate_bits_2((output[11] + output[7]), 18) ^ output[15];
 	
-		transponse_2(output);
+	
+
+        //iteration 2 on transposed matrix
+		output[1] = rotate_bits_2((output[0] + output[3]), 7) ^ output[1];
+		output[6] = rotate_bits_2((output[5] + output[4]), 7) ^ output[6];       
+		output[11] = rotate_bits_2((output[10] + output[9]), 7) ^ output[11];       
+		output[12] = rotate_bits_2((output[15] + output[14]), 7) ^ output[12];       
+
+		output[2] = rotate_bits_2((output[0] + output[1]), 9) ^ output[2];
+		output[7] = rotate_bits_2((output[5] + output[6]), 9) ^ output[7];       
+		output[8] = rotate_bits_2((output[10] + output[11]), 9) ^ output[8];       
+		output[13] = rotate_bits_2((output[15] + output[12]), 9) ^ output[13]; 
+	
+		output[3] = rotate_bits_2((output[2] + output[1]), 13) ^ output[3];
+		output[4] = rotate_bits_2((output[7] + output[6]), 13) ^ output[4];       
+		output[9] = rotate_bits_2((output[8] + output[11]), 13) ^ output[9];       
+		output[14] = rotate_bits_2((output[13] + output[12]), 13) ^ output[14];
+		
+		output[0] = rotate_bits_2((output[3] + output[2]), 18) ^ output[0];
+		output[5] = rotate_bits_2((output[4] + output[7]), 18) ^ output[5];       
+		output[10] = rotate_bits_2((output[9] + output[8]), 18) ^ output[10];       
+		output[15] = rotate_bits_2((output[14] + output[13]), 18) ^ output[15];
+	
 	}
 
 	for (uint8_t i = 0; i < 16; i++)
