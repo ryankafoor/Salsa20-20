@@ -149,7 +149,7 @@ static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
 
 //naive as possible
 
-static void transponse_1( uint32_t array[16]){
+static void transpose_1( uint32_t array[16]){
 
   uint32_t temp[16];
 
@@ -208,7 +208,7 @@ static void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
     output[10] = rotate_bits_1((output[6] + output[2]), 18) ^ output[10];       
     output[15] = rotate_bits_1((output[11] + output[7]), 18) ^ output[15];
   
-    transponse_1(output);
+    transpose_1(output);
   }
 
   for (uint8_t i = 0; i < 16; i++)
@@ -325,11 +325,7 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
 }
 
 
-   //TODO: C implementation with intrinsics
-
-   //TODO: C and assembly implementation with SIMD (main inplementation)
-
-   //TODO: Benchmarking framework
+   
 
 
 //a function to write help messages
