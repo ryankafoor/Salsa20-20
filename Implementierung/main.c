@@ -397,7 +397,7 @@ int main(int argc, char *argv[]) {
           }
           break;
       case 'h':
-              printHelp();
+              print_help();
               return EXIT_SUCCESS;
       case 'o':
           output_file = optarg;
