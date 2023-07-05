@@ -37,7 +37,7 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
   //void* aligned_addr = (void * ) (((size_t)(p_addr) + offset) & ~(offset));
   //b) OR use modulo operator to get how much to move forward
   int move_forward = (alignment - ((size_t)p_addr % alignment));
-  void* aligned_addr= (void*)((size_t)p_addr + move_forward);
+  void* aligned_addr= (size_t)p_addr + move_forward;
   // store 16-bit offset instead of a 32bit or 64 bit platform address.
   *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
   return aligned_addr;
@@ -63,15 +63,11 @@ void aligned_free(void *aligned_addr ){
 #define IV_SIZE 8
 #define KEY_SIZE 16
 
-extern void transpose_asm( uint32_t array[16]);
-extern uint32_t rotate_bits_asm(uint32_t number, uint8_t i);
-
-//comment what these constants are
-
-static const uint32_t const1 = 0x61707865;
-static const uint32_t const2 = 0x3320646e;
-static const uint32_t const3 = 0x79622d32;
-static const uint32_t const4 = 0x6b206574;
+//constants read as expand 32-byte k, written in 4 bytes of little endian
+static const uint32_t const1 = 0x61707865; //apxe
+static const uint32_t const2 = 0x3320646e; //3 dn
+static const uint32_t const3 = 0x79622d32; //yb-2
+static const uint32_t const4 = 0x6b206574; //k et
 
 static char* read_file(const char* path) {
   char* string = NULL;
@@ -119,7 +115,6 @@ static char* read_file(const char* path) {
           exit(EXIT_FAILURE);
         }
       }
-  printf("test dumb2 \n");
   
   return string;
 }
@@ -328,12 +323,7 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
     perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
     exit(EXIT_FAILURE);
   }
-  if (mlen < 256)
-  {
-    salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
-  }
   
-
   salsa20_crypt_2(mlen,toEncrypt,cipher,key,iv);
 
   return cipher;
@@ -358,12 +348,12 @@ static void printHelp() {
 }
 
 int main(int argc, char *argv[]) {
- int opt;
+  int opt;
   const char *input_file = NULL;
   const char *output_file = NULL;
 
   uint32_t key[8];
-  uint64_t iv;
+  uint64_t iv = 0;
 
   int version_number = 0;
   int benchmark_iteration = 1;
@@ -410,7 +400,6 @@ int main(int argc, char *argv[]) {
           output_file = optarg;
           output_flag = 1;
           break;
-      //TODO: input file in hexadecimal? currently: decimal
       case 'k':
           hex_to_little_endian_32bit_array(optarg, key, 8);
           key_flag = 1;
@@ -465,21 +454,20 @@ int main(int argc, char *argv[]) {
   }
 
   //handle input file: extract message and message length, update mlen
-  //
-  printf("test dumb3 \n");
+  //Input file should be valid and required arguments are provided
+
   mlen = strlen(input_file);
-  
   if (mlen == 0) {
-    printf("Input file empty");
+    printf("Input file is empty, nothing to encrypt/decrypt");
     exit(EXIT_FAILURE);
   }
 
-  uint8_t msg2[mlen];
-  uint8_t cipher[mlen];
+  //TODO!! malloc msg2? and cipher
 
-  memcpy(msg2, input_file, mlen);
+  // uint8_t msg2[mlen];
+  // uint8_t cipher[mlen];
+  // memcpy(msg2, input_file, mlen);
 
-  //TODO: run program according to -B, -V, -k, -o
   if(benchmark_flag){
     printf("Benchmarking mode using %d iterations \n ", benchmark_iteration);
     printf("Implementation version: %d \n", version_number);
@@ -494,7 +482,7 @@ int main(int argc, char *argv[]) {
   switch(version_number) {
     case 0:
         for(size_t i = 0; i < benchmark_iteration - 1; i++) {
-            //TODO!: call main implementation
+            //TODO!: call main implementation with input text in msg2 and output text in cipher
         }
         break;
     case 1:
@@ -594,11 +582,6 @@ int main(int argc, char *argv[]) {
    TEST CODE in main END
   ==========================================
   */
-
-
- 
-
-  
 
   return EXIT_SUCCESS;
 }
