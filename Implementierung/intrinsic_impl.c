@@ -3,11 +3,11 @@
 #include <immintrin.h>
 
  
-
-static const uint32_t const_int_1 = 0x61707865;
-static const uint32_t const_int_2 = 0x3320646e;
-static const uint32_t const_int_3 = 0x79622d32;
-static const uint32_t const_int_4 = 0x6b206574;
+//constants read as expand 32-byte k, written in 4 bytes of little endian
+static const uint32_t const_int_1 = 0x61707865; //apxe
+static const uint32_t const_int_2 = 0x3320646e; //3 dn
+static const uint32_t const_int_3 = 0x79622d32; //yb-2
+static const uint32_t const_int_4 = 0x6b206574; //k et
 
 //TODO: C implementation with intrinsics
 

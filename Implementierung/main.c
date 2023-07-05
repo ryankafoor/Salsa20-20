@@ -37,7 +37,7 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
   //void* aligned_addr = (void * ) (((size_t)(p_addr) + offset) & ~(offset));
   //b) OR use modulo operator to get how much to move forward
   int move_forward = (alignment - ((size_t)p_addr % alignment));
-  void* aligned_addr= (size_t)p_addr + move_forward;
+  void* aligned_addr= (void*)((size_t)p_addr + move_forward);
   // store 16-bit offset instead of a 32bit or 64 bit platform address.
   *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
   return aligned_addr;
@@ -541,7 +541,7 @@ int main(int argc, char *argv[]) {
 
   clock_gettime(CLOCK_MONOTONIC,&start_time);
 
-  uint8_t *encrypted = test(msg,msgLen);
+  uint8_t *encrypted = test((uint8_t *)msg,msgLen);
 
   clock_gettime(CLOCK_MONOTONIC, &end_time);
 
@@ -558,7 +558,7 @@ int main(int argc, char *argv[]) {
   */
   uint8_t *decrypted = test(encrypted,msgLen);
 
-  write_file("output.txt",decrypted);
+  write_file("output.txt",(char *)decrypted);
   /*
   printf("Decrypted Message :\n");
   for (size_t i = 0; i < msgLen; i++)
