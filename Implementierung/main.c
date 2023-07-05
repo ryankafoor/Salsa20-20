@@ -69,6 +69,7 @@ static const uint32_t const2 = 0x3320646e; //3 dn
 static const uint32_t const3 = 0x79622d32; //yb-2
 static const uint32_t const4 = 0x6b206574; //k et
 
+
 static char* read_file(const char* path) {
   char* string = NULL;
   FILE* file;
@@ -119,8 +120,62 @@ static char* read_file(const char* path) {
   return string;
 }
 
-   
 
+//Test Implementation for alligned read file. Do not Modify!!
+/*
+
+static char* read_file(const char* path) {
+    char* string = NULL;
+    FILE* file = NULL;
+    struct stat sb;
+
+    if (!(file = fopen(path, "r"))) {
+        perror("An error occurred while opening the file");
+        goto cleanup;
+    }
+
+    if (fstat(fileno(file), &sb) == -1) {
+        perror("Status of file could not be checked");
+        goto cleanup;
+    }
+
+    if (!S_ISREG(sb.st_mode) || sb.st_size <= 0) {
+        perror("Error: File not a regular file or invalid size");
+        goto cleanup;
+    }
+
+    // Calculate the required size for alignment
+    size_t required_size = sb.st_size + 1;
+
+    // Allocate memory with alignment
+    if (posix_memalign((void**)&string, 32, required_size) != 0) {
+        perror("Error in allocating aligned memory");
+        goto cleanup;
+    }
+
+    if (fread(string, 1, sb.st_size, file) != (size_t)sb.st_size) {
+        perror("Error reading file");
+        free(string);
+        string = NULL;
+        goto cleanup;
+    }
+
+    string[sb.st_size] = '\0';
+
+cleanup:
+    if (file) {
+        if (fclose(file) == EOF) {
+            perror("Error closing file");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return string;
+}
+   
+*/
+
+//posix_alignment? why not?
    
 static void write_file (const char* path, const char* string){
     
@@ -586,6 +641,9 @@ int main(int argc, char *argv[]) {
    TEST CODE in main END
   ==========================================
   */
+
+
+  
 
   return EXIT_SUCCESS;
 }
