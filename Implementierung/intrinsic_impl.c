@@ -4,8 +4,6 @@
 
  
 
-
-
 static const uint32_t const_int_1 = 0x61707865;
 static const uint32_t const_int_2 = 0x3320646e;
 static const uint32_t const_int_3 = 0x79622d32;
