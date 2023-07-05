@@ -240,7 +240,7 @@ static void transpose_1( uint32_t array[16]){
 //Naive C implementation without intrinsics
 
 
-static void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
+static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
 
   for (int i = 0; i < 16; i++) {
     output[i] = input[i];
@@ -281,7 +281,7 @@ static void salsa20_core_1(uint32_t output[16], const uint32_t input[16]){
 }
 
 
-static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
   
   size_t coreCounter = mlen / 64;
 
@@ -320,7 +320,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
     
     //outputMatrix contains output of core
-    salsa20_core_1(outputMatrix,inputMatrix);
+    salsa20_core_v1(outputMatrix,inputMatrix);
 
     //initializing key for each byte and pointer to outputMatrix
       for (size_t j = 0; j < 64; j++)
@@ -350,7 +350,7 @@ static void salsa20_crypt_1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 
-    salsa20_core_2(outputMatrix,inputMatrix);
+    salsa20_core_v1(outputMatrix,inputMatrix);
     //Check values of OutputMatrix
     //printf("Output Matrix :\n");
     //for ( int x = 0 ; x < 16 ; x++){
@@ -380,10 +380,10 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   }
   if (mlen < 256)
   {
-    salsa20_crypt_1(mlen,toEncrypt,cipher,key,iv);
+    salsa20_crypt_v1(mlen,toEncrypt,cipher,key,iv);
   }
   
-  salsa20_crypt_2(mlen,toEncrypt,cipher,key,iv);
+  salsa20_crypt(mlen,toEncrypt,cipher,key,iv);
 
   return cipher;
 }
@@ -642,7 +642,7 @@ int main(int argc, char *argv[]) {
   ==========================================
   */
 
-
+  //Run with ./main -k 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef -o output.txt -i 0123456789abcdef test.txt
   
 
   return EXIT_SUCCESS;
