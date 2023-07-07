@@ -46,7 +46,7 @@ return;
 */
 
 int is_valid_hex(char c) {
-    return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+    return isxdigit(c);
 }
 
 
@@ -148,3 +148,40 @@ size_t get_file_length(const char *filename) {
     return length;
 }
 
+
+void pad_hex_string(char* input, char* output, size_t output_length) {
+    size_t input_length = strlen(input);
+    
+    
+    if (input_length > output_length) {
+        if(output_length == 64) {
+            fprintf(stderr, "Invalid key input: key length should be less than %zu hex digits\n", output_length);
+            return;
+        }
+        if (output_length == 16) {
+            fprintf(stderr, "Invalid nonce input: nonce length should be less than %zu hex digits\n", output_length);
+            return;
+        }
+    }
+    // Check for valid hexadecimal digits
+    for (size_t i = 0; i < input_length; ++i) {
+        if (!is_valid_hex(input[i])) {
+            fprintf(stderr, "Invalid input: input should contain only hexadecimal digits\n");
+            return;
+        }
+    }
+    
+    size_t padding_length = output_length - input_length;
+    for (size_t i = 0; i < padding_length; ++i) {
+        output[i] = '0';
+    }
+    
+    for (size_t i = 0; i < input_length; ++i) {
+        output[i + padding_length] = input[i];
+    }
+    
+    // Null terminate the output string
+    output[output_length] = '\0';
+    size_t output_length_check = strlen(output);
+    printf("length of output string = %zu hex digits", output_length_check);
+}
