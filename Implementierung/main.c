@@ -399,8 +399,8 @@ int main(int argc, char *argv[]) {
   uint64_t iv = 0;
 
   //temporary storage to store the key and iv input (from user), before padding it with zeroes
-  char input_key[64];
-  char input_iv[16];
+  char input_key[65];
+  char input_iv[17];
 
   int version_number = 0;
   int benchmark_iteration = 1;
@@ -430,7 +430,7 @@ int main(int argc, char *argv[]) {
   };
 
 
-  while ((opt = getopt_long(argc, argv, "V:B:k:i:o:h", long_opt, 0)) != -1)
+  while ((opt = getopt_long(argc, argv, "V:B:k:i:o:h:d", long_opt, 0)) != -1)
   {
       switch (opt)
       {
@@ -618,7 +618,7 @@ int main(int argc, char *argv[]) {
 
   printf("Program finished successfully.\n");
 
-
+return EXIT_SUCCESS;
 
   /*
   ==========================================
