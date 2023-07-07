@@ -16,8 +16,6 @@
 
 
 
-
-
 // aligned_malloc(1000, 128) will return a memory address
 // that is a multiple of 128 and that points to memory of size 1000 bytes.
 //offset_t is a uint16_t, supports up to 64KB alignment, a size which is already unlikely to be used for alignment.
@@ -452,6 +450,7 @@ int main(int argc, char *argv[]) {
           print_help();
           return EXIT_SUCCESS;
       case 'o':
+          printf("Output file \t: %s\n", optarg);
           output_file = optarg;
           output_flag = 1;
           break;
@@ -486,7 +485,7 @@ int main(int argc, char *argv[]) {
   }
 
   input_text = read_file(argv[optind]);
-  printf("Input file: %s\n", argv[optind]);
+  printf("Input file \t: %s\n", argv[optind]);
   if (input_text == NULL) {
     printf("Input file invalid \n");
     exit(EXIT_FAILURE);
