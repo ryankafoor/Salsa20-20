@@ -207,6 +207,10 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 			void _mm256_store_si256 (__m256i * mem_addr, __m256i a);
 		*/
 
+
+  //!!!!Alternate code path with SSE2 if AVX2 is not supported. Make the code backwards compatible
+
+
 		//msg and cipher not alligned
 		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64));  
 		//outputInt = _mm256_load_si256 ((__m256i const*)outputPtr);
