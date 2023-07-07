@@ -459,7 +459,9 @@ int main(int argc, char *argv[]) {
           key_flag = 1;
           break;
       case 'i':
+          printf("here");
           pad_hex_string(optarg, input_iv, 16);
+          printf("also here");
           printf("IV: %s\n", input_iv);
           hex_to_little_endian_uint64(input_iv, &iv);
           iv_flag = 1;
