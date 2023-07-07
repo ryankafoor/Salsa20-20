@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include "util.h"
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define MAX_INPUT_LENGTH 64
 
 void print_error(const char *func_name, const char *message) {
    if(!message || !func_name) {
-        fprintf(stderr, "\033 Error found in function [%s] :  %s \033 \n", "print_error", "Invalid input");
+        fprintf(stderr, "\033 Error found in function [%s] : %s \033 \n", "print_error", "Invalid input");
         return;
     }
     else {
@@ -17,7 +20,7 @@ void print_error(const char *func_name, const char *message) {
 }
 
 void print_help() {
-    printf("============ SALSA20 HELP PAGE ============\n");
+    printf(" ======================  SALSA20 HELP PAGE  ======================\n \n");
     printf("The function is a symmetric cipher that takes a key and an initializing vector\n");
     printf("from user input, then use them to create a series of key cipher that will be used\n");
     printf("to encrypt and decrypt message inside the input file, then write the result to the output file.\n \n \n");
@@ -32,11 +35,14 @@ void print_help() {
     printf("Additionally, the program requires a positional argument that specify the input file path. \n \n");
 
     //TODO: adjust this part after talking with group (what is the acceptable format for iv and key: hex or decimal, length less than 32/16?)
-    printf("Example usage: \n");
-    printf("Run the program with the naive implementation (0), benchmark by doing 100 iterations, \n");
-    printf("with key 0123456789abcdef0123456789abcdef and initialisation vector 0123456789abcdef, \n");
-    printf("to encrypt the input file input.txt and write the output in output.txt: \n");
-    printf("\t ./main -V 0 -B 100 -k 0123456789abcdef0123456789abcdef -i 0123456789abcdef -o output.txt input.txt\n");
+    printf("Command line example to run the program: \n");
+    printf("\t With the improved implementation (0),\n");
+    printf("\t With key 0123456789abcdef0123456789abcdef, \n");
+    printf("\t With initialisation vector 0123456789abcdef, \n");
+    printf("\t To encrypt the input file input.txt, and write the output in output.txt,\n");
+    printf("\t By doing 100 iterations: \n\n");
+    printf("\t ./main -V 0 -B 100 -k 0123456789abcdef0123456789abcdef -i 0123456789abcdef -o output.txt input.txt\n \n");
+    printf(" ==================== END OF SALSA20 HELP PAGE ====================\n");
 return;
 }
 
@@ -78,14 +84,21 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
     }
     out_array[i / 8] = word;
     }
+
+    // //uncomment to see the output
+    // for(size_t i = 0; i < array_size; i++) {
+    //     printf("array[%zu] = 0x%08x\n", i, out_array[i]);
+    // }
+
+
 }
 
 
 
-void hex_to_little_endian_uint64(const char* hex, uint64_t* iv) {
+void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
     size_t hex_length = strlen(hex);
     
-    // There should be 16 hexadecimal digits
+   
     if (hex_length != 16) {
         fprintf(stderr, "Invalid nonce: input must be 16 hexadecimal digits\n");
         return;
@@ -99,19 +112,20 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t* iv) {
         }
     }
 
-    *iv = 0;
-
     int ret;
     // Convert hex string to uint64_t
-    for (size_t i = 0; i < hex_length; i += 2) {
+    for (size_t i = 0; i < hex_length; i += 2) { //2 hex digits per byte
         uint8_t byte;
         ret = sscanf(&hex[i], "%2hhx", &byte);
         if (ret != 1) {
             fprintf(stderr, "Error reading byte in nonce\n");
             return;
         }
-        *iv |= (uint64_t)byte << (i * 4); // Shift 4 bits for each half byte
+        iv |= (uint64_t)byte << (i * 4); // Shift 8 bits for every bytes
     }
+
+    printf("IV after little endian = 0x%08lx\n", iv);
+
 }
 
 
@@ -166,7 +180,7 @@ void pad_hex_string(char* input, char* output, size_t output_length) {
     // Check for valid hexadecimal digits
     for (size_t i = 0; i < input_length; ++i) {
         if (!is_valid_hex(input[i])) {
-            fprintf(stderr, "Invalid input: input should contain only hexadecimal digits\n");
+            print_error("util", "input for key / iv should contain only hexadecimal digits \n");
             return;
         }
     }
@@ -183,5 +197,4 @@ void pad_hex_string(char* input, char* output, size_t output_length) {
     // Null terminate the output string
     output[output_length] = '\0';
     size_t output_length_check = strlen(output);
-    printf("length of output string = %zu hex digits", output_length_check);
 }

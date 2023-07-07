@@ -396,7 +396,8 @@ int main(int argc, char *argv[]) {
   const char *output_file = NULL;
 
   uint32_t key[8];
-  uint64_t iv = 0;
+  uint64_t iv;
+  iv = 0;
 
   //temporary storage to store the key and iv input (from user), before padding it with zeroes
   char input_key[65];
@@ -434,11 +435,12 @@ int main(int argc, char *argv[]) {
   {
       switch (opt)
       {
-        case 'd':
+      case 'd':
+          //TODO: Somehow running -d gives error
           debug_flag = 1;
           //TODO: debug mode? print out more information? e.g. state of variables / key / iv / etc.
           break;
-        case 'V':
+      case 'V':
           version_number = atoi(optarg);
           printf("Version number: %d\n", version_number);
           if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
@@ -459,19 +461,17 @@ int main(int argc, char *argv[]) {
           key_flag = 1;
           break;
       case 'i':
-          printf("here");
           pad_hex_string(optarg, input_iv, 16);
-          printf("also here");
-          printf("IV: %s\n", input_iv);
-          hex_to_little_endian_uint64(input_iv, &iv);
+          hex_to_little_endian_uint64(input_iv, iv);
           iv_flag = 1;
           break;
       case 'B':
+          //currently, -B REQUIRES an argument. TODO!!!
           benchmark_flag = 1;
           benchmark_iteration = strtoull(optarg, NULL, 10);
-          if(!benchmark_iteration || benchmark_iteration > ITERATION_MAX){
-            print_error("main", "Benchmark mode: invalid number of iterations. See help page with -h for more information. \n");
-            exit(EXIT_FAILURE);
+          if(benchmark_iteration > ITERATION_MAX){
+              print_error("main", "Benchmark mode: invalid number of iterations. See help page with -h for more information. \n");
+              exit(EXIT_FAILURE);
           }
           break;
       default:
@@ -481,33 +481,33 @@ int main(int argc, char *argv[]) {
   }
 
   if (argv[optind] == NULL) {
-    printf("Input file missing");
+    printf("Input file missing \n");
     exit(EXIT_FAILURE);
   }
 
   input_text = read_file(argv[optind]);
   printf("Input file: %s\n", argv[optind]);
   if (input_text == NULL) {
-    printf("Input file invalid");
+    printf("Input file invalid \n");
     exit(EXIT_FAILURE);
   }
 
   optind++;
   if (optind < argc) {
-    printf("Too many arguments");
+    printf("Too many arguments \n");
     exit(EXIT_FAILURE);
   }
 
   if(!key_flag){
-    printf("Key missing, see help page with -h for more information");
+    printf("Key missing, see help page with -h for more information \n");
     exit(EXIT_FAILURE);
   }
   if(!iv_flag){
-    printf("Initialisation vector missing, see help page with -h for more information");
+    printf("Initialisation vector missing, see help page with -h for more information \n");
     exit(EXIT_FAILURE);
   }
   if(!output_flag){
-    printf("Output file missing, see help page with -h for more information");
+    printf("Output file missing, see help page with -h for more information \n");
     exit(EXIT_FAILURE);
   }
 
@@ -516,21 +516,21 @@ int main(int argc, char *argv[]) {
 
   mlen = strlen(input_text);
   if (mlen == 0) {
-    printf("Input file is empty, nothing to encrypt/decrypt");
+    printf("Input file is empty, nothing to encrypt/decrypt \n");
     exit(EXIT_FAILURE);
   }
 
   uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
   if (cipher==NULL)
   {
-    perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
+    perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen \n)");
     exit(EXIT_FAILURE);
   }
 
 
 
   if(benchmark_flag){
-    printf("Benchmarking mode using %d iterations \n ", benchmark_iteration);
+    printf("Benchmarking mode using %d iterations \n", benchmark_iteration);
     printf("Implementation version: %d \n", version_number);
     start = clock();
   }
@@ -551,9 +551,9 @@ int main(int argc, char *argv[]) {
   */
   switch(version_number) {
     case 0:
-      printf("Version 0 selected, encryption in process\n");
+      printf("Version 0 selected, encryption in progress\n");
 
-      for(size_t i = 0; i < benchmark_iteration - 1; i++) {
+      for(size_t i = 0; i < benchmark_iteration ; i++) {
       salsa20_crypt(mlen, input_text, cipher, key, iv);
       }
 
@@ -562,64 +562,71 @@ int main(int argc, char *argv[]) {
     case 1:
       printf("Version 1 selected, encryption in process\n");
 
-      for(size_t i = 0; i < benchmark_iteration - 1; i++) {
+      for(size_t i = 0; i < benchmark_iteration ; i++) {
       salsa20_crypt_v1(mlen, input_text, cipher, key, iv);
       }
 
       write_file(output_file,(char *)cipher);
       break;
     default:
-      printf("Version number is invalid.");
+      printf("Version number is invalid. \n");
       exit(EXIT_FAILURE);
     }
 
   if(benchmark_flag){
     end = clock();
     avg_time = (((double) (end - start)) / CLOCKS_PER_SEC) / benchmark_iteration;
-    printf("\nBenchmarking mode finished with %zu iterations\n", benchmark_iteration);
+    printf("\nBenchmarking mode finished with %d iterations\n", benchmark_iteration);
     printf("Average time taken: %f seconds \n", avg_time);
   }
 
-  //for debug: run the program on output
-  uint8_t *decrypted_text = aligned_malloc(mlen*sizeof(uint8_t),32);
-  if (decrypted_text == NULL) {
-    perror("Error allocating memory for decrypted_text: main");
-    exit(EXIT_FAILURE);
-  }
+  /*
+  TODO: MAKE A DEBUG FLAG
+  the following code is faulty
+  */
+ 
+  // //for debug: run the program on output
+  // uint8_t *decrypted_text = aligned_malloc(mlen*sizeof(uint8_t),32);
+  // if (decrypted_text == NULL) {
+  //   perror("Error allocating memory for decrypted_text: main \n");
+  //   exit(EXIT_FAILURE);
+  // }
 
-  //print debug info: checks if running the program with the output will result in the original text
-  if(debug_flag){
-    char* encrypted_text = read_file(output_file);
-    if (encrypted_text == NULL) {
-      printf("Output file invalid");
-      exit(EXIT_FAILURE);
-    }
+  // //print debug info: checks if running the program with the output will result in the original text
+  // if(debug_flag){
+  //   char* encrypted_text = read_file(output_file);
+  //   if (encrypted_text == NULL) {
+  //     printf("Output file invalid \n");
+  //     exit(EXIT_FAILURE);
+  //   }
 
 
-    printf("Debug mode: checking if running the program with the output will result in the original text\n");
-    switch(version_number) {
-      case 0:
-        salsa20_crypt(mlen, encrypted_text, decrypted_text, key, iv);
-        break;
-      case 1:
-        salsa20_crypt_v1(mlen, input_text, decrypted_text, key, iv);
-        break;
-      default:
-        printf("Version number is invalid.");
-        exit(EXIT_FAILURE);
-    }
-    if(memcmp(input_text, decrypted_text, mlen) != 0) {
-      printf("Decryption failed.\n");
-      return EXIT_FAILURE;
-    }
-  printf("Decryption succeeded.\n");
-  }
+  //   printf("Debug mode: checking if running the program with the output will result in the original text\n");
+  //   switch(version_number) {
+  //     case 0:
+  //       salsa20_crypt(mlen, encrypted_text, decrypted_text, key, iv);
+  //       break;
+  //     case 1:
+  //       salsa20_crypt_v1(mlen, input_text, decrypted_text, key, iv);
+  //       break;
+  //     default:
+  //       printf("Version number is invalid. \n");
+  //       exit(EXIT_FAILURE);
+  //   }
 
+  //   write_file(output_file, decrypted_text);
+  //   if(memcmp(input_text, decrypted_text, mlen) != 0) {
+  //     printf("Decryption failed.\n");
+  //     return EXIT_FAILURE;
+  //   }
+  // printf("Decryption succeeded.\n");
+  // }
+  //  
+  // aligned_free(decrypted_text);
   aligned_free(cipher);
-  aligned_free(decrypted_text);
 
   printf("Program finished successfully.\n");
-
+  printf("Message length: %zu char \n", mlen);
 return EXIT_SUCCESS;
 
   /*

@@ -21,7 +21,7 @@ uint32_t hex_to_decimal(char c);
 void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size_t array_size); 
 
 //function to convert a hex string to a 64 bit little endian uint64 FOR IV / NONCE!!!
-void hex_to_little_endian_uint64(const char* hex, uint64_t* iv);
+void hex_to_little_endian_uint64(const char* hex, uint64_t iv);
 
 //function to get the length of a file = msglen
 size_t get_file_length(const char *filename);
