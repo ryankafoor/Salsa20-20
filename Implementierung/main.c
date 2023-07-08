@@ -12,7 +12,7 @@
 #include <time.h>
 #include "util.h"
 #include "util.c"
-//#include <malloc.h>
+
 
 
 
@@ -197,16 +197,13 @@ static void write_file (const char* path, const char* string){
 }
 
 
-
-//Rotate function
-//__attribute__((hot))
-//__attribute__((always_inline))
+//function to roate bits
 static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
 
-//naive as possible
 
+//naive transpose function
 static void transpose_1( uint32_t array[16]){
 
   uint32_t temp[16];
@@ -236,7 +233,6 @@ static void transpose_1( uint32_t array[16]){
 
 
 //Naive C implementation without intrinsics
-
 
 static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
 

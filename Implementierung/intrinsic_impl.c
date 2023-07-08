@@ -9,58 +9,8 @@ static const uint32_t const_int_2 = 0x3320646e; //3 dn
 static const uint32_t const_int_3 = 0x79622d32; //yb-2
 static const uint32_t const_int_4 = 0x6b206574; //k et
 
-//TODO: C implementation with intrinsics
-
-/*
-//assembly can be used here to optimize this function (rol)
-__attribute__((hot))
-//__attribute__((const))
-__attribute__((always_inline))
-static uint32_t rotate_bits_2(uint32_t number, uint8_t i){
-	return (number << i) | (number >> (32 -i));
-}
-
-*/
 
 
-//xchg??
-
-//xor swap not recommended as compiler can not recognise the aim for optimization
-//https://en.wikipedia.org/wiki/XOR_swap_algorithm#Reasons_for_avoidance_in_practice:~:text=Reasons%20for%20avoidance%20in%20practice
-//__attribute__((hot))
-//__attribute__((always_inline)) 
-static void transponse_2( uint32_t array[16]){
-	
-
-	uint32_t temp;
-
-	temp = array[1];
-	array[1] = array[4];
-	array[4] = temp;
-
-	temp = array[2];
-	array[2] = array[8];
-	array[8] = temp;
-
-	temp = array[3];
-	array[3] = array[12];
-	array[12] = temp;
-
-	temp = array[6];
-	array[6] = array[9];
-	array[9] = temp;
-
-	temp = array[7];
-	array[7] = array[13];
-	array[13] = temp;
-
-	temp = array[11];
-	array[11] = array[14];
-	array[14] = temp;
-	
-	
-		
-}
 
 __attribute__((hot))
 uint32_t rotate_bits_asm(uint32_t number, uint8_t i);;
@@ -133,6 +83,7 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 
 
+
 static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
 
 
@@ -141,17 +92,12 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 
 	size_t restChar = mlen % 64;
 
-	//__attribute__((aligned(32)))
+	__attribute__((aligned(32)))
 	uint32_t inputMatrix[16];
 
-	//allign forcubly with a boundary of 32 bytes
+	//allign forcibly with a boundary of 32 bytes
 	__attribute__((aligned(32))) 
 	uint32_t outputMatrix[16];
-/*
-	__m256i cipheredInt;
-	__m256i mssgInt;
-	__m256i outputInt;
-*/
 
 
 	uint8_t *charPointer;
