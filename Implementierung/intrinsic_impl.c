@@ -13,7 +13,7 @@ static const uint32_t const_int_4 = 0x6b206574; //k et
 
 
 static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_t* outputPtr, size_t i){
-	//SSE specific code
+	
 	/*	
 	Instructions used from SSE2
 	__m128i _mm_load_si128 (__m128i const* mem_addr)
@@ -34,7 +34,6 @@ static void avx_intrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_
 
 	#ifdef __AVX__
 	
-	// AVX-specific code
 		/*
 		Instructions used from AVX2
 		__m256i _mm256_xor_si256 (__m256i a, __m256i b);
@@ -45,7 +44,7 @@ static void avx_intrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_
 		//512 bits divided onto 2 operations
 		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
 		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)outputPtr+32)));
-	
+
 	#endif
 }
 

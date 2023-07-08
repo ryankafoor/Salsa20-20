@@ -67,7 +67,7 @@ static const uint32_t const2 = 0x3320646e; //3 dn
 static const uint32_t const3 = 0x79622d32; //yb-2
 static const uint32_t const4 = 0x6b206574; //k et
 
-
+/*
 static char* read_file(const char* path) {
   char* string = NULL;
   FILE* file;
@@ -117,10 +117,10 @@ static char* read_file(const char* path) {
   
   return string;
 }
-
+*/
 
 //Test Implementation for alligned read file. Do not Modify!!
-/*
+
 
 static char* read_file(const char* path) {
     char* string = NULL;
@@ -171,7 +171,7 @@ cleanup:
     return string;
 }
    
-*/
+
 
 //posix_alignment? why not?
    
