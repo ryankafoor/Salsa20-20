@@ -40,14 +40,19 @@ void print_help() {
 
     printf("Available options / arguments are:\n");
     printf("\t -V, --version:             Set the implementation version (0 or 1) \n");
-    printf("\t -B, --benchmark:           Benchmark the implementation, specify the number of iteration directly after -B(without whitespace)  \n");
-    printf("\t -k, --key                  (REQUIRED) set the key for salsa20 calculation (32 bytes) \n");
-    printf("\t -i, --init_vector          (REQUIRED) set the initialisation vector (8 bytes) \n");
+    printf("\t -B, --benchmark:           Benchmark the program by doing iterations based on specified argument \n");
+    printf("\t                            If no argument is specified, then the program will run once\n");
+    printf("\t -k, --key                  (REQUIRED) set the key for salsa20 calculation (32 bytes of hexadecimal) \n");
+    printf("\t -i, --init_vector          (REQUIRED) set the initialisation vector (8 bytes of hexadecimal) \n");
     printf("\t -o, --output_file          (REQUIRED) set the output file path \n");
     printf("\t -h, --help                 Display help page then exit the program\n \n");
     printf("Additionally, the program requires a positional argument that specify the input file path. \n \n");
+    printf("All options with argument accept both argument with or without whitespace after the -option,\n");
+    printf("meaning the program accepts both -B100 and -B 100.\n");
+    printf("Hexadecimal arguments do not require the prefix 0x. Simply put e.g. -i 0123abcde.\n");
 
     //TODO: adjust this part after talking with group (what is the acceptable format for iv and key: hex or decimal, length less than 32/16?)
+    printf("\n");
     printf("Command line example to run the program: \n");
     printf("\t With the improved implementation (0),\n");
     printf("\t With key 0123456789abcdef0123456789abcdef, \n");
@@ -143,7 +148,7 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
         iv |= (uint64_t)byte << (i * 4); // Shift 8 bits for every bytes
     }
 
-    printf("IV after little endian = 0x%08lx\n", iv);
+    printf("IV after little endian = 0x%08lx. COMMENT OUT LATER (util.c :hex_to_little_endian_uint64)\n", iv);
 
 }
 

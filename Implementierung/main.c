@@ -441,8 +441,11 @@ int main(int argc, char *argv[]) {
           //checks if running the program on encrypted message gives the original message back.
           break;
       case 'V':
+          if(!is_positive_number(optarg)){
+              printf("Error: Version number must be either 0 or 1 \n");
+              exit(EXIT_FAILURE);
+          }
           version_number = atoi(optarg);
-          printf("Version number: %d\n", version_number);
           if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
               printf("Invalid version number. Please see the help page with ./main -h for more information\n");
               exit(EXIT_FAILURE);
@@ -578,7 +581,7 @@ int main(int argc, char *argv[]) {
     start = clock();
   }
   else{
-    printf("Implementation version: %d \n", version_number);
+    printf("Implementation version:\t %d \n", version_number);
   }
   /*
   Section: Input_Handling END
@@ -607,7 +610,7 @@ int main(int argc, char *argv[]) {
       write_file(output_file,(char *)cipher);
       break;
     case 1:
-      printf("Version 1 selected, encryption in process\n");
+      printf("Version 1 selected, encryption in process...\n");
 
       for(size_t i = 0; i < benchmark_iteration ; i++) {
       salsa20_crypt_v1(mlen, input_text, cipher, key, iv);
