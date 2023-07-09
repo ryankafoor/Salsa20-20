@@ -2,9 +2,6 @@
 #define __UTIL_H__
 
 
-// function to print standard message?? do we need this
-void print_message(const char *func_name, const char *message);
-
 // function to print error message to stderr with errno message if available
 void print_error(const char *func_name, const char *message);
 

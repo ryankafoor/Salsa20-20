@@ -8,13 +8,26 @@
 
 #define MAX_INPUT_LENGTH 64
 
+int is_positive_number(const char *str) {
+    for (int i = 0; str[i] != '\0'; ++i) {
+        if (!isdigit(str[i])) {
+            if(str[i] == '&'){
+            print_error("main", "Benchmark mode cannot accept & as an argument. Please see help page with ./main -h. \n");
+            exit(EXIT_FAILURE);
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void print_error(const char *func_name, const char *message) {
    if(!message || !func_name) {
-        fprintf(stderr, "\033 Error found in function [%s] : %s \033 \n", "print_error", "Invalid input");
+        fprintf(stderr, "Error found in function [%s]. %s \n", "print_error", "Invalid input");
         return;
     }
     else {
-        fprintf(stderr, "\033 Error found in function [%s] :  %s \033 \n", func_name, message);
+        fprintf(stderr, "Error found in function [%s]. %s \n", func_name, message);
         return;
     }
 }
@@ -61,12 +74,14 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
     
     if (hex_length != 64 || array_size < 8 ) {
         fprintf(stderr, "Invalid key: input must be 64 hexadecimal digits\n");
+        exit(EXIT_FAILURE);
         return;
     }
 
     for (size_t i = 0; i < hex_length; ++i) {
         if (!is_valid_hex(hex[i])) {
             fprintf(stderr, "Invalid key: input must be in hexadecimal\n");
+            exit(EXIT_FAILURE);
             return;
         }
     }
@@ -78,6 +93,7 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
         ret = sscanf(&hex[i + j * 2], "%2hhx", &byte);
         if (ret != 1) {
             fprintf(stderr, "Error reading byte in key: %ld\n", i + j * 2);
+            exit(EXIT_FAILURE);
             return;
         }
         word |= (uint32_t)byte << (j * 8);
@@ -100,14 +116,16 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
     
    
     if (hex_length != 16) {
-        fprintf(stderr, "Invalid nonce: input must be 16 hexadecimal digits\n");
+        fprintf(stderr, "Invalid nonce /iv: input must be 16 hexadecimal digits\n");
+        exit(EXIT_FAILURE);
         return;
     }
 
     // Check that the string only contains hexadecimal digits
     for (size_t i = 0; i < hex_length; ++i) {
         if (!is_valid_hex(hex[i])) {
-            fprintf(stderr, "Invalid nonce: input must be in hexadecimal \n");
+            fprintf(stderr, "Invalid nonce / iv: input must be in hexadecimal \n");
+            exit(EXIT_FAILURE);
             return;
         }
     }
@@ -119,6 +137,7 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
         ret = sscanf(&hex[i], "%2hhx", &byte);
         if (ret != 1) {
             fprintf(stderr, "Error reading byte in nonce\n");
+            exit(EXIT_FAILURE);
             return;
         }
         iv |= (uint64_t)byte << (i * 4); // Shift 8 bits for every bytes
@@ -170,17 +189,20 @@ void pad_hex_string(char* input, char* output, size_t output_length) {
     if (input_length > output_length) {
         if(output_length == 64) {
             fprintf(stderr, "Invalid key input: key length should be less than %zu hex digits\n", output_length);
+            exit(EXIT_FAILURE);
             return;
         }
         if (output_length == 16) {
-            fprintf(stderr, "Invalid nonce input: nonce length should be less than %zu hex digits\n", output_length);
+            fprintf(stderr, "Invalid nonce /iv: nonce length should be less than %zu hex digits\n", output_length);
+            exit(EXIT_FAILURE);
             return;
         }
     }
     // Check for valid hexadecimal digits
     for (size_t i = 0; i < input_length; ++i) {
         if (!is_valid_hex(input[i])) {
-            print_error("util", "input for key / iv should contain only hexadecimal digits \n");
+            print_error("utility", "Input for key / iv is required and should contain only hexadecimal digits. \n");
+            exit(EXIT_FAILURE);
             return;
         }
     }

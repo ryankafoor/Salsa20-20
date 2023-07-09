@@ -385,7 +385,7 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
 
 
 int main(int argc, char *argv[]) {
-  int opt;
+  int opt, next_option;
   const char *input_text = NULL;
   const char *output_file = NULL;
 
@@ -411,7 +411,12 @@ int main(int argc, char *argv[]) {
 
   size_t mlen = 0;
 
-  //define acceptable options
+
+  /*
+  Section Option_Handling START
+  Parse the available options and their arguments, throw error for unsupported options or invalid arguments
+  See help page with ./main -h for more information
+  */
   static const struct option long_opt[] =
   {
           {"debug", no_argument, NULL, 'd'},
@@ -425,20 +430,21 @@ int main(int argc, char *argv[]) {
   };
 
 
-  while ((opt = getopt_long(argc, argv, "d:V:B:k:i:o:h", long_opt, 0)) != -1)
+  while ((opt = getopt_long(argc, argv, "dV:B::k:i:o:h", long_opt, NULL)) != -1)
   {
       switch (opt)
       {
       case 'd':
-          //TODO: Somehow running -d gives error
           debug_flag = 1;
+          printf("Debug mode on\n");
           //TODO: debug mode? print out more information? e.g. state of variables / key / iv / etc.
+          //checks if running the program on encrypted message gives the original message back.
           break;
       case 'V':
           version_number = atoi(optarg);
           printf("Version number: %d\n", version_number);
           if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
-              printf("Invalid version number. Please see the help page for more information");
+              printf("Invalid version number. Please see the help page with ./main -h for more information\n");
               exit(EXIT_FAILURE);
           }
           break;
@@ -446,7 +452,6 @@ int main(int argc, char *argv[]) {
           print_help();
           return EXIT_SUCCESS;
       case 'o':
-          printf("Output file \t: %s\n", optarg);
           output_file = optarg;
           output_flag = 1;
           break;
@@ -460,20 +465,48 @@ int main(int argc, char *argv[]) {
           hex_to_little_endian_uint64(input_iv, iv);
           iv_flag = 1;
           break;
+      /*/
+      -B has an optional argument, meaning it can run with -B, -B<number>, -B <number>
+      How this handler works:
+        1. If -B is set, then set the benchmark flag
+        2. It checks if -B is followed with an argument directly / without space with if(optarg)
+           Then checks if the argument is a positive number
+        3. If point 2 is not the case, then checks if -B have an argument with space with else if (optind < argc && is_positive_number(argv[optind]))
+           And checks if the argument is a positive number
+      */
       case 'B':
-          //currently, -B REQUIRES an argument. TODO!!!
           benchmark_flag = 1;
-          benchmark_iteration = strtoull(optarg, NULL, 10);
-          if(benchmark_iteration > ITERATION_MAX){
-              print_error("main", "Benchmark mode: invalid number of iterations. See help page with -h for more information. \n");
-              exit(EXIT_FAILURE);
+          if(optarg ){
+              if(is_positive_number(optarg)){
+                  benchmark_iteration = strtoull(optarg, NULL, 10);
+                  if(benchmark_iteration > ITERATION_MAX || benchmark_iteration < 1){
+                      print_error("main", "Benchmark mode: invalid number of iterations. Please see the help page with ./main -h for more information\n");
+                      exit(EXIT_FAILURE);
+                      break;
+                  }
+              }
+              else {
+                  print_error("main", "Benchmark mode only accepts positive number. Please see the help page with ./main -h for more information\n");
+                  exit(EXIT_FAILURE);
+                  break;
+              }
+              break;
+          }
+          else if (optind < argc && is_positive_number(argv[optind])) {
+              benchmark_iteration = strtoull(argv[optind], NULL, 10);
+              printf("benchmark number is %d\n", benchmark_iteration);
+              optind++;  // increment optind so the next getopt call will skip this argument
+              break;
           }
           break;
       default:
-          print_error("main", "Invalid program argument. See help page with  -h for more information. \n");
+          print_error("main, -default", "Invalid program argument. Please see the help page with ./main -h for more information\n");
           exit(EXIT_FAILURE);
     }
   }
+  /*
+  Section Option_Handling END
+  */
 
   if (argv[optind] == NULL) {
     printf("Input file missing \n");
@@ -494,21 +527,36 @@ int main(int argc, char *argv[]) {
   }
 
   if(!key_flag){
-    printf("Key missing, see help page with -h for more information \n");
+    printf("Key missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
   if(!iv_flag){
-    printf("Initialisation vector missing, see help page with -h for more information \n");
+    printf("Initialisation vector missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
   if(!output_flag){
-    printf("Output file missing, see help page with -h for more information \n");
+    printf("Output file missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
 
-  //handle input file: extract message and message length, update mlen
-  //Input file should be valid and required arguments are provided
 
+
+  /*
+  Section: Optional_Output START
+  The following output is not important: only there to help with debugging. 
+  */
+  printf("Output file \t: %s\n", output_file);
+  /*
+  Section: Optional_Output END
+  */
+
+
+
+  /*
+  Section: Input_Handling START
+  Handle input file: extract message and message length, update mlen.
+  Input file should be valid and required arguments are provided.
+  */
   mlen = strlen(input_text);
   if (mlen == 0) {
     printf("Input file is empty, nothing to encrypt/decrypt \n");
@@ -532,7 +580,11 @@ int main(int argc, char *argv[]) {
   else{
     printf("Implementation version: %d \n", version_number);
   }
-  
+  /*
+  Section: Input_Handling END
+  */
+
+
 
   /*
   At this point, all inputs should be correct, and input file should be readable.
