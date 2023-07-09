@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <immintrin.h>
+#include <cpuid.h>
+
 
  
 //constants read as expand 32-byte k, written in 4 bytes of little endian
@@ -9,58 +11,59 @@ static const uint32_t const_int_2 = 0x3320646e; //3 dn
 static const uint32_t const_int_3 = 0x79622d32; //yb-2
 static const uint32_t const_int_4 = 0x6b206574; //k et
 
-//TODO: C implementation with intrinsics
 
-/*
-//assembly can be used here to optimize this function (rol)
-__attribute__((hot))
-//__attribute__((const))
-__attribute__((always_inline))
-static uint32_t rotate_bits_2(uint32_t number, uint8_t i){
-	return (number << i) | (number >> (32 -i));
+static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_t* outputPtr, size_t i){
+	
+	/*	
+	Instructions used from SSE2
+	__m128i _mm_load_si128 (__m128i const* mem_addr)
+	__m128i _mm_xor_si128 (__m128i a, __m128i b)
+	void _mm_store_si128 (__m128i* mem_addr, __m128i a)
+	*/
+
+	//512 bits divided onto 4 operations
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*6+16), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr)));
+	
 }
 
-*/
+static void avx_intrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_t* outputPtr, size_t i){
 
 
-//xchg??
-
-//xor swap not recommended as compiler can not recognise the aim for optimization
-//https://en.wikipedia.org/wiki/XOR_swap_algorithm#Reasons_for_avoidance_in_practice:~:text=Reasons%20for%20avoidance%20in%20practice
-//__attribute__((hot))
-//__attribute__((always_inline)) 
-static void transponse_2( uint32_t array[16]){
+	#ifdef __AVX__
 	
+		/*
+		Instructions used from AVX2
+		__m256i _mm256_xor_si256 (__m256i a, __m256i b);
+		__m256i _mm256_load_si256 (__m256i const * mem_addr);
+		void _mm256_store_si256 (__m256i * mem_addr, __m256i a);
+		*/	
 
-	uint32_t temp;
+		//512 bits divided onto 2 operations
+		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
+		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)outputPtr+32)));
 
-	temp = array[1];
-	array[1] = array[4];
-	array[4] = temp;
-
-	temp = array[2];
-	array[2] = array[8];
-	array[8] = temp;
-
-	temp = array[3];
-	array[3] = array[12];
-	array[12] = temp;
-
-	temp = array[6];
-	array[6] = array[9];
-	array[9] = temp;
-
-	temp = array[7];
-	array[7] = array[13];
-	array[13] = temp;
-
-	temp = array[11];
-	array[11] = array[14];
-	array[14] = temp;
-	
-	
-		
+	#endif
 }
+
+
+
+static const uint8_t check_avx_support()
+{
+    uint32_t reg_eax, reg_ebx, reg_ecx, reg_edx;
+
+    // Call __cpuid() function with leaf set to 1 to check CPU features
+    __cpuid(1, reg_eax, reg_ebx, reg_ecx, reg_edx);
+
+    // Check if AVX bit is set (bit 28 of ECX register)
+    if ((reg_ecx & (1 << 28)) != 0){
+        return 1;
+	}
+    return 0; 
+}
+
 
 __attribute__((hot))
 uint32_t rotate_bits_asm(uint32_t number, uint8_t i);;
@@ -135,23 +138,19 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
 
-
+	//checks if avx extension is supported
+	uint8_t avx_supported = check_avx_support();
  
 	size_t coreCounter = mlen / 64;
 
 	size_t restChar = mlen % 64;
 
-	//__attribute__((aligned(32)))
+	__attribute__((aligned(32)))
 	uint32_t inputMatrix[16];
 
-	//allign forcubly with a boundary of 32 bytes
+	//allign forcibly with a boundary of 32 bytes
 	__attribute__((aligned(32))) 
 	uint32_t outputMatrix[16];
-/*
-	__m256i cipheredInt;
-	__m256i mssgInt;
-	__m256i outputInt;
-*/
 
 
 	uint8_t *charPointer;
@@ -171,6 +170,7 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 	inputMatrix[12]=key[5];
 	inputMatrix[13]=key[6];
 	inputMatrix[14]=key[7];
+
 
 
 	//Assigning nonce values
@@ -198,53 +198,12 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
 		
-		/*  
-			__m256i _mm256_xor_si256 (__m256i a, __m256i b);
-			__m256i _mm256_load_si256 (__m256i const * mem_addr);
-			//or 
-			__m256i _mm256_set_epi32 (int e7, int e6, int e5, int e4, int e3, int e2, int e1, int e0);
-			
-			void _mm256_store_si256 (__m256i * mem_addr, __m256i a);
-		*/
 
-		//msg and cipher not alligned
-		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64));  
-		//outputInt = _mm256_load_si256 ((__m256i const*)outputPtr);
-		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr));
-		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
-	
-		//mssgInt = _mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32));
-		//outputInt = _mm256_load_si256 ((__m256i const*)(outputPtr+32));
-		//cipheredInt = _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32)));
-		//_mm256_storeu_si256 ((__m256i*)(cipherPtr+i*64),  _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_xor_si256 (_mm256_loadu_si256 ((__m256i const*)(msgPtr+i*64+32)), _mm256_load_si256 ((__m256i const*)(outputPtr+32))) ));
-
-		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)outputPtr+32)));
-
-
-			//__m256i vec = _mm256_set1_epi32(40);
-			
-		
-		//maximum 256 bits can be processed parallely which contributes a speedup of 32!! 
-		
-		//supported architectures on rechnerhalle that may be of relevance to us
-		//lscpu on rechnerhalle
-		/*
-		MMX
-		SSE family
-		SSE
-		SSE2
-		SSSE3
-		SSE4.1
-		SSE4.2
-		AVX family
-		AVX
-		F16C
-		FMA
-		AVX2
-		*/
-
-			
-			
+		if(avx_supported){
+			avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
+		}else{
+			sse_instrinsic_func(cipherPtr, msgPtr, outputPtr, i);
+		}
 			
 		keyCounter++;
         

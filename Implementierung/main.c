@@ -12,7 +12,7 @@
 #include <time.h>
 #include "util.h"
 #include "util.c"
-//#include <malloc.h>
+
 
 
 
@@ -67,7 +67,7 @@ static const uint32_t const2 = 0x3320646e; //3 dn
 static const uint32_t const3 = 0x79622d32; //yb-2
 static const uint32_t const4 = 0x6b206574; //k et
 
-
+/*
 static char* read_file(const char* path) {
   char* string = NULL;
   FILE* file;
@@ -117,10 +117,10 @@ static char* read_file(const char* path) {
   
   return string;
 }
-
+*/
 
 //Test Implementation for alligned read file. Do not Modify!!
-/*
+
 
 static char* read_file(const char* path) {
     char* string = NULL;
@@ -171,7 +171,7 @@ cleanup:
     return string;
 }
    
-*/
+
 
 //posix_alignment? why not?
    
@@ -197,16 +197,13 @@ static void write_file (const char* path, const char* string){
 }
 
 
-
-//Rotate function
-//__attribute__((hot))
-//__attribute__((always_inline))
+//function to roate bits
 static uint32_t rotate_bits_1(uint32_t number, uint8_t i){
   return (number << i) | (number >> (32 -i));
 }
 
-//naive as possible
 
+//naive transpose function
 static void transpose_1( uint32_t array[16]){
 
   uint32_t temp[16];
@@ -236,7 +233,6 @@ static void transpose_1( uint32_t array[16]){
 
 
 //Naive C implementation without intrinsics
-
 
 static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
 

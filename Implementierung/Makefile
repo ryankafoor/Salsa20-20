@@ -1,4 +1,5 @@
-CFLAGS = -O0  -mavx2 #Options can be added here 
+CFLAGS = -O0 -march=native#Options can be added here 
+# use -mno-avx if avx should be disabled
 
 all: main 
 
@@ -11,7 +12,6 @@ clean:
 	rm -f main
 
 # Instructions:
-# make (makes all)
-# make main 
-# make clean all (cleans and then makes all)
+# make (makes all) 
+# make clean all (removes main and then makes all)
 # make CFLAGS="-O3-Wall-Wextra" #Specifies flag 
