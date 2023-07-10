@@ -121,7 +121,7 @@ static char* read_file(const char* path) {
 
 //Test Implementation for alligned read file. Do not Modify!!
 
-
+//this function should be used to read from file for the optimised implementation
 static char* read_file(const char* path) {
     char* string = NULL;
     FILE* file = NULL;
