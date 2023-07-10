@@ -23,9 +23,9 @@ static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8
 
 	//512 bits divided onto 4 operations
 	_mm_store_si128 ((__m128i*) cipherPtr+i*64, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*6+16), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*6+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr+32)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr+48)));
 	
 }
 
@@ -75,10 +75,10 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 	for (int i = 0; i < 16; i++) {
 		output[i] = input[i];
-}
+    }
 
-	for (uint8_t i = 0; i < 10; i++)
-	{
+	for (uint8_t i = 0; i < 10; i++){
+
 		//iteration 1
 		output[4] = rotate_bits_asm((output[0] + output[12]), 7) ^ output[4];
 		output[9] = rotate_bits_asm((output[5] + output[1]), 7) ^ output[9];       
@@ -170,7 +170,6 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 	inputMatrix[12]=key[5];
 	inputMatrix[13]=key[6];
 	inputMatrix[14]=key[7];
-
 
 
 	//Assigning nonce values

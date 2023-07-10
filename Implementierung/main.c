@@ -173,7 +173,7 @@ cleanup:
    
 
 
-//posix_alignment? why not?
+
    
 static void write_file (const char* path, const char* string){
     
@@ -195,6 +195,7 @@ static void write_file (const char* path, const char* string){
     }
 
 }
+
 
 
 //function to roate bits
@@ -269,8 +270,7 @@ static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
   {
     output[i] += input[i]; 
   }
-  
-  
+   
 
 }
 
