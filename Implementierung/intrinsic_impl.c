@@ -23,7 +23,7 @@ static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8
 
 	//512 bits divided onto 4 operations
 	_mm_store_si128 ((__m128i*) cipherPtr+i*64, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*6+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
 	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr+32)));
 	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr+48)));
 	
@@ -196,7 +196,6 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 		
 		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
-		
 
 		if(avx_supported){
 			avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
