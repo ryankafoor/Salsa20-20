@@ -1,12 +1,13 @@
-CFLAGS = -O0 -march=native -std=gnu17#Options can be added here 
+CFLAGS = -O0 -march=native -std=gnu17 #Options can be added here 
 # use -mno-avx if avx should be disabled
+WFLAGS = -Wall -Wextra -Wpedantic -g
 
 all: main 
 
 
 main: main.c rotate_bits.S
 
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(WFLAGS) 
 
 clean:  
 	rm -f main
