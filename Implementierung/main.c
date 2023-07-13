@@ -301,17 +301,20 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
   inputMatrix[12]=key[5];
   inputMatrix[13]=key[6];
   inputMatrix[14]=key[7];
+
+
   //Assigning nonce values
-  inputMatrix[6]=iv & 0xFFFFFFFF;
-  inputMatrix[7]=(iv >> 32) & 0xFFFFFFFF;
+  inputMatrix[6]=(iv >> 32) & 0xFFFFFFFF;
+  inputMatrix[7]=iv & 0xFFFFFFFF;
+
   //Counter value in key
   uint64_t keyCounter = 0;
-
+  
   for (size_t i = 0; i < coreCounter; i++)
   {
     //Assigning C0 and C1
-    inputMatrix[8]=keyCounter & 0xFFFFFFFF;
-    inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
+    inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
+    inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
     
     //outputMatrix contains output of core
     salsa20_core_v1(outputMatrix,inputMatrix);
@@ -341,8 +344,8 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
   if (restChar != 0)
   {
-    inputMatrix[8]=keyCounter & 0xFFFFFFFF;
-    inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
+    inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
+    inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
 
     salsa20_core_v1(outputMatrix,inputMatrix);
     //Check values of OutputMatrix
@@ -465,7 +468,7 @@ int main(int argc, char *argv[]) {
           break;
       case 'i':
           pad_hex_string(optarg, input_iv, 16);
-          hex_to_little_endian_uint64(input_iv, iv);
+          iv = hex_to_little_endian_uint64(input_iv);
           iv_flag = 1;
           break;
       /*/
@@ -674,6 +677,7 @@ int main(int argc, char *argv[]) {
   //  
   // aligned_free(decrypted_text);
   aligned_free(cipher);
+  //aligned_free(input_text);
 
   printf("Program finished successfully.\n");
   printf("Message length: %zu char \n", mlen);
@@ -694,6 +698,7 @@ return EXIT_SUCCESS;
     printf("Failure in reading from file\n");
     return EXIT_FAILURE;
   } 
+  
   size_t msgLen = strlen((char*)msg);
 
   /*
@@ -739,6 +744,7 @@ return EXIT_SUCCESS;
   printf("\n");
 
 */
+
   if(memcmp(msg, decrypted, msgLen) != 0) {
       printf("Decryption failed.\n");
       return EXIT_FAILURE;
@@ -762,5 +768,6 @@ return EXIT_SUCCESS;
   
 
   return EXIT_SUCCESS;
+  
 }
 

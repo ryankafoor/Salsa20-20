@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <byteswap.h>
 
 #define MAX_INPUT_LENGTH 64
 
@@ -116,14 +117,13 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
 
 
 
-void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
+uint64_t hex_to_little_endian_uint64(const char* hex) {
     size_t hex_length = strlen(hex);
-    
+    uint64_t iv;
    
     if (hex_length != 16) {
         fprintf(stderr, "Invalid nonce /iv: input must be 16 hexadecimal digits\n");
         exit(EXIT_FAILURE);
-        return;
     }
 
     // Check that the string only contains hexadecimal digits
@@ -131,7 +131,6 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
         if (!is_valid_hex(hex[i])) {
             fprintf(stderr, "Invalid nonce / iv: input must be in hexadecimal \n");
             exit(EXIT_FAILURE);
-            return;
         }
     }
 
@@ -143,13 +142,12 @@ void hex_to_little_endian_uint64(const char* hex, uint64_t iv) {
         if (ret != 1) {
             fprintf(stderr, "Error reading byte in nonce\n");
             exit(EXIT_FAILURE);
-            return;
+            
         }
         iv |= (uint64_t)byte << (i * 4); // Shift 8 bits for every bytes
     }
-
     printf("IV after little endian = 0x%08lx. COMMENT OUT LATER (util.c :hex_to_little_endian_uint64)\n", iv);
-
+    return iv;
 }
 
 
@@ -164,6 +162,12 @@ uint32_t hex_to_decimal(char c) {
         return c - 'a' + 10;
     else
         return 0;
+}
+
+uint32_t to_little_endian(uint32_t number) {
+    //check whether system using little endian 
+     return bswap_32(number);
+    
 }
 
 
