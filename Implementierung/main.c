@@ -579,7 +579,7 @@ int main(int argc, char *argv[]) {
 
 
   /*
-  Section: Input_Handling START
+  Section: Input_Handling
   Handle input file: extract message and message length, update mlen.
   Input file should be valid and required arguments are provided.
   */
@@ -607,9 +607,6 @@ int main(int argc, char *argv[]) {
   else{
     printf("Implementation version:\t %d \n", version_number);
   }
-  /*
-  Section: Input_Handling END
-  */
 
 
 
@@ -654,49 +651,57 @@ int main(int argc, char *argv[]) {
     printf("Average time taken: %f seconds \n", avg_time);
   }
 
-  /*
-  TODO: MAKE A DEBUG FLAG
-  the following code is faulty
-  */
+
+
+
+/*
+DEBUG SECTION -- Option / Flag -d set
+
+Correctness check:
+  - using the input text, run the algorithm on both versions to create two encrypted texts
+  - check if both texts are identital
+  - both versions should deliver the same encrypted text
+
+How this section works:
+  - from the previous section, cipher is updated with the encrypted text, either using V0 or V1
+  - we check which version was used, and create another encrypted text based on the unused version
+  - then we compare both texts
+*/
+  if(debug_flag){
+      printf("\nDebug mode selected,\n");
+      printf("Comparing encrypted text using both versions\n");
+      uint8_t *cipherTwo = NULL;
+      if (posix_memalign((void **)&cipherTwo,32, mlen*sizeof(uint8_t)) != 0){
+          perror("Error allocating memory for CipherTwo inside debug mode\n)");
+          exit(EXIT_FAILURE);
+      }
+
+      switch(version_number) {
+          case 0:
+              salsa20_crypt_v1(mlen, (uint8_t *)input_text, cipherTwo, key, iv);
+              break;
+          case 1:
+              salsa20_crypt(mlen, (uint8_t *)input_text, cipherTwo, key, iv);
+              break;
+          default: 
+              printf("Error in debug mode: version number invalid \n");
+              exit(EXIT_FAILURE);
+      }
+
+      //compare cipher and cipherTwo
+      if(!memcmp((char*)cipher, (char*)cipherTwo, mlen)){
+          printf("Correctness check passed: both versions produce the same encrypted text \n");
+      }
+      else printf("Correctness check failed: both version produce different encrypted text \n");
+
+      //use only for small texts
+      printf("mlen is %ld\n", mlen);
+      for(size_t i = 0; i < mlen; i++) {  
+      printf("cipher[%zu] = %02x, cipherTwo[%zu] = %02x\n", i, cipher[i], i, cipherTwo[i]);
+}
+      free(cipherTwo);
+  }
  
-  // //for debug: run the program on output
-  // uint8_t *decrypted_text = aligned_malloc(mlen*sizeof(uint8_t),32);
-  // if (decrypted_text == NULL) {
-  //   perror("Error allocating memory for decrypted_text: main \n");
-  //   exit(EXIT_FAILURE);
-  // }
-
-  // //print debug info: checks if running the program with the output will result in the original text
-  // if(debug_flag){
-  //   char* encrypted_text = read_file(output_file);
-  //   if (encrypted_text == NULL) {
-  //     printf("Output file invalid \n");
-  //     exit(EXIT_FAILURE);
-  //   }
-
-
-  //   printf("Debug mode: checking if running the program with the output will result in the original text\n");
-  //   switch(version_number) {
-  //     case 0:
-  //       salsa20_crypt(mlen, encrypted_text, decrypted_text, key, iv);
-  //       break;
-  //     case 1:
-  //       salsa20_crypt_v1(mlen, input_text, decrypted_text, key, iv);
-  //       break;
-  //     default:
-  //       printf("Version number is invalid. \n");
-  //       exit(EXIT_FAILURE);
-  //   }
-
-  //   write_file(output_file, decrypted_text);
-  //   if(memcmp(input_text, decrypted_text, mlen) != 0) {
-  //     printf("Decryption failed.\n");
-  //     return EXIT_FAILURE;
-  //   }
-  // printf("Decryption succeeded.\n");
-  // }
-  //  
-  // aligned_free(decrypted_text);
   free(cipher);
   free(toBeFreed);
   printf("Program finished successfully.\n");
