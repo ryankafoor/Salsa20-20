@@ -19,6 +19,7 @@
 // aligned_malloc(1000, 128) will return a memory address
 // that is a multiple of 128 and that points to memory of size 1000 bytes.
 //offset_t is a uint16_t, supports up to 64KB alignment, a size which is already unlikely to be used for alignment.
+/*
 typedef uint16_t offset_t;
 #define PTR_OFFSET_SZ sizeof(offset_t)
 
@@ -40,16 +41,18 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
   *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
   return aligned_addr;
 }
+*/
 
-void aligned_free(void *aligned_addr ){
+//void aligned_free(void *aligned_addr ){
   /* Find the address stored by aligned_malloc() ,"size_t" bytes above the current pointer then free it using free() API.*/
+  /*
   size_t offset = *((size_t *) aligned_addr);
   // get to p_addr using offset and aligned_addr value and call 
   
   // free() on it.
   free((void *)(*((size_t*) aligned_addr) - offset));
 }
-
+*/
 
 
 
@@ -178,13 +181,14 @@ cleanup:
 static void write_file (const char* path, const char* string){
     
     FILE* file;
+    size_t len = strlen(string);
     
     if(!(file = fopen(path, "w"))) {
         perror("An error occurred while opening the file");
         exit(EXIT_FAILURE);
     }
 
-    if(fwrite(string, 1, strlen(string), file) != strlen(string)){
+    if(fwrite(string, 1, len, file) != len){
         perror("Error writing to file");
         exit(EXIT_FAILURE);
     }
@@ -309,6 +313,19 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
   //Counter value in key
   uint64_t keyCounter = 0;
+  /*
+  uint32_t count1 = keyCounter & 0xFFFFFFFF;
+  uint32_t count2 = (keyCounter>>32) & 0xFFFFFFFF;
+
+  inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
+  inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
+  printf("keyCounter_0 : 0x%08x\n",inputMatrix[8]);
+  printf("keyCounter_1 : 0x%08x\n",inputMatrix[9]);
+  printf("without little endian :\n");
+  printf("keyCounter_0 : 0x%08x\n",count1);
+  printf("keyCounter_1 : 0x%08x\n",count2);
+  */
+
   
   for (size_t i = 0; i < coreCounter; i++)
   {
@@ -363,7 +380,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 }
 
 
-
+/*
 static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
   //These two values we can alter
   uint32_t key[8] = {1,2,3,4,5,6,7,8};
@@ -384,11 +401,13 @@ static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
 
   return cipher;
 }
+*/
 
 
 
 int main(int argc, char *argv[]) {
-  int opt, next_option;
+  //int opt, next_option;
+  int opt;
   const char *input_text = NULL;
   const char *output_file = NULL;
 
@@ -401,7 +420,7 @@ int main(int argc, char *argv[]) {
   char input_iv[17];
 
   int version_number = 0;
-  int benchmark_iteration = 1;
+  size_t benchmark_iteration = 1;
 
   int benchmark_flag = 0;
   int key_flag = 0;
@@ -500,7 +519,7 @@ int main(int argc, char *argv[]) {
           }
           else if (optind < argc && is_positive_number(argv[optind])) {
               benchmark_iteration = strtoull(argv[optind], NULL, 10);
-              printf("benchmark number is %d\n", benchmark_iteration);
+              printf("benchmark number is %ld\n", benchmark_iteration);
               optind++;  // increment optind so the next getopt call will skip this argument
               break;
           }
@@ -520,6 +539,7 @@ int main(int argc, char *argv[]) {
   }
 
   input_text = read_file(argv[optind]);
+  char *toBeFreed = (char*)input_text;
   printf("Input file \t: %s\n", argv[optind]);
   if (input_text == NULL) {
     printf("Input file invalid \n");
@@ -568,9 +588,10 @@ int main(int argc, char *argv[]) {
     printf("Input file is empty, nothing to encrypt/decrypt \n");
     exit(EXIT_FAILURE);
   }
+  uint8_t *cipher = NULL;
 
-  uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
-  if (cipher==NULL)
+  //uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
+  if (posix_memalign((void **)&cipher,32, mlen*sizeof(uint8_t)) != 0)
   {
     perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen \n)");
     exit(EXIT_FAILURE);
@@ -579,7 +600,7 @@ int main(int argc, char *argv[]) {
 
 
   if(benchmark_flag){
-    printf("Benchmarking mode using %d iterations \n", benchmark_iteration);
+    printf("Benchmarking mode using %ld iterations \n", benchmark_iteration);
     printf("Implementation version: %d \n", version_number);
     start = clock();
   }
@@ -607,7 +628,7 @@ int main(int argc, char *argv[]) {
       printf("Version 0 selected, encryption in progress\n");
 
       for(size_t i = 0; i < benchmark_iteration ; i++) {
-      salsa20_crypt(mlen, input_text, cipher, key, iv);
+      salsa20_crypt(mlen, (uint8_t *)input_text, cipher, key, iv);
       }
 
       write_file(output_file,(char *)cipher);
@@ -616,7 +637,7 @@ int main(int argc, char *argv[]) {
       printf("Version 1 selected, encryption in process...\n");
 
       for(size_t i = 0; i < benchmark_iteration ; i++) {
-      salsa20_crypt_v1(mlen, input_text, cipher, key, iv);
+      salsa20_crypt_v1(mlen, (uint8_t *)input_text, cipher, key, iv);
       }
 
       write_file(output_file,(char *)cipher);
@@ -629,7 +650,7 @@ int main(int argc, char *argv[]) {
   if(benchmark_flag){
     end = clock();
     avg_time = (((double) (end - start)) / CLOCKS_PER_SEC) / benchmark_iteration;
-    printf("\nBenchmarking mode finished with %d iterations\n", benchmark_iteration);
+    printf("\nBenchmarking mode finished with %ld iterations\n", benchmark_iteration);
     printf("Average time taken: %f seconds \n", avg_time);
   }
 
@@ -676,9 +697,8 @@ int main(int argc, char *argv[]) {
   // }
   //  
   // aligned_free(decrypted_text);
-  aligned_free(cipher);
-  //aligned_free(input_text);
-
+  free(cipher);
+  free(toBeFreed);
   printf("Program finished successfully.\n");
   printf("Message length: %zu char \n", mlen);
 return EXIT_SUCCESS;
@@ -692,7 +712,7 @@ return EXIT_SUCCESS;
   //msg we can alter
   //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDE";
   //uint8_t *msg = (uint8_t*)"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.156464";
-  
+  /*
   char* msg = read_file("input.txt");
   if(!msg){
     printf("Failure in reading from file\n");
@@ -700,7 +720,7 @@ return EXIT_SUCCESS;
   } 
   
   size_t msgLen = strlen((char*)msg);
-
+  */
   /*
   printf("Original Message :\n");
   for (size_t i = 0; i < msgLen; i++)
@@ -709,6 +729,7 @@ return EXIT_SUCCESS;
   }
   
   */
+  /*
   printf("\n");
   //check
 
@@ -717,12 +738,13 @@ return EXIT_SUCCESS;
 
   clock_gettime(CLOCK_MONOTONIC,&start_time);
 
-  uint8_t *encrypted = test((uint8_t *)msg,msgLen);
+  //uint8_t *encrypted = test((uint8_t *)msg,msgLen);
 
   clock_gettime(CLOCK_MONOTONIC, &end_time);
 
   double time = end_time.tv_sec - start_time.tv_sec + 1e-9*(end_time.tv_nsec - start_time.tv_nsec);
   double time_for_one_byte = time / msgLen;
+  */
 /*
   printf("Encrypted Message :\n");
   for (size_t i = 0; i < msgLen; i++)
@@ -732,9 +754,9 @@ return EXIT_SUCCESS;
   printf("\n");
   // check if the decrypted message matches the original message
   */
-  uint8_t *decrypted = test(encrypted,msgLen);
+  //uint8_t *decrypted = test(encrypted,msgLen);
 
-  write_file("output.txt",(char *)decrypted);
+  //write_file("output.txt",(char *)decrypted);
   /*
   printf("Decrypted Message :\n");
   for (size_t i = 0; i < msgLen; i++)
@@ -744,20 +766,20 @@ return EXIT_SUCCESS;
   printf("\n");
 
 */
-
+/*
   if(memcmp(msg, decrypted, msgLen) != 0) {
       printf("Decryption failed.\n");
       return EXIT_FAILURE;
     }
   printf("Decryption succeeded.\n");
    
-  aligned_free(encrypted);
-  aligned_free(decrypted);
+  //aligned_free(encrypted);
+  //aligned_free(decrypted);
   
 
   printf("Time taken for ecrypting message: %f\n", time);
   printf("Average time for one byte: %f\n", time_for_one_byte);
-  
+  */
   /*
   ==========================================
    TEST CODE in main END
@@ -767,7 +789,6 @@ return EXIT_SUCCESS;
   //Run with ./main -k 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef -o output.txt -i 0123456789abcdef test.txt
   
 
-  return EXIT_SUCCESS;
-  
+  //return EXIT_SUCCESS;
 }
 

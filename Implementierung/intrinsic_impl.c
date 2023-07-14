@@ -4,7 +4,6 @@
 #include <cpuid.h>
 
 
-
  
 //constants read as expand 32-byte k, written in 4 bytes of little endian
 static const uint32_t const_int_1 = 0x61707865; //apxe
@@ -23,10 +22,10 @@ static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8
 	*/
 
 	//512 bits divided onto 4 operations
-	_mm_store_si128 (((__m128i*) cipherPtr+i*64), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 (((__m128i*) cipherPtr+i*64+16), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
-	_mm_store_si128 (((__m128i*) cipherPtr+i*64+32), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr+32)));
-	_mm_store_si128 (((__m128i*) cipherPtr+i*64+48), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr+48)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr+32)));
+	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr+48)));
 	
 }
 
@@ -51,7 +50,7 @@ static void avx_intrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_
 
 
 
-static const uint8_t check_avx_support()
+static uint8_t check_avx_support()
 {
     uint32_t reg_eax, reg_ebx, reg_ecx, reg_edx;
 
@@ -67,7 +66,7 @@ static const uint8_t check_avx_support()
 
 
 __attribute__((hot))
-uint32_t rotate_bits_asm(uint32_t number, uint8_t i);;
+uint32_t rotate_bits_asm(uint32_t number, uint8_t i);
 
 
 
@@ -82,9 +81,10 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 		//iteration 1
 		output[4] = rotate_bits_asm((output[0] + output[12]), 7) ^ output[4];
+		output[3] = rotate_bits_asm((output[15] + output[11]), 7) ^ output[3];  
 		output[9] = rotate_bits_asm((output[5] + output[1]), 7) ^ output[9];       
 		output[14] = rotate_bits_asm((output[10] + output[6]), 7) ^ output[14];       
-		output[3] = rotate_bits_asm((output[15] + output[11]), 7) ^ output[3];       
+		     
 
 		output[8] = rotate_bits_asm((output[0] + output[4]), 9) ^ output[8];
 		output[13] = rotate_bits_asm((output[5] + output[9]), 9) ^ output[13];       
@@ -102,7 +102,7 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 		output[15] = rotate_bits_asm((output[11] + output[7]), 18) ^ output[15];
 	
 	
-		/*
+        /*
         //iteration 2 on transposed matrix
 		output[1] = rotate_bits_asm((output[0] + output[3]), 7) ^ output[1];
 		output[6] = rotate_bits_asm((output[5] + output[4]), 7) ^ output[6];       
@@ -199,8 +199,9 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 
 
 	//Assigning nonce values
-	inputMatrix[7]=iv & 0xFFFFFFFF;
 	inputMatrix[6]=(iv >> 32) & 0xFFFFFFFF;
+	inputMatrix[7]=iv & 0xFFFFFFFF;
+
 
     const uint8_t* msgPtr = msg;
 	uint8_t* cipherPtr = cipher;

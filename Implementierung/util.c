@@ -227,5 +227,5 @@ void pad_hex_string(char* input, char* output, size_t output_length) {
     
     // Null terminate the output string
     output[output_length] = '\0';
-    size_t output_length_check = strlen(output);
+    //size_t output_length_check = strlen(output);
 }
