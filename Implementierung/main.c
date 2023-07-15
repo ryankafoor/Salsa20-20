@@ -88,17 +88,17 @@ static char* read_file(const char* path, size_t** fileSize) {
     struct stat sb;
 
     if (!(file = fopen(path, "r"))) {
-        fprintf(stderr,"An error occurred while opening the file");
+        fprintf(stderr,"An error occurred while opening the file\n");
         goto cleanup;
     }
 
     if (fstat(fileno(file), &sb) == -1) {
-        fprintf(stderr,"Status of file could not be checked");
+        fprintf(stderr,"Status of file could not be checked\n");
         goto cleanup;
     }
 
-    if (!S_ISREG(sb.st_mode) || sb.st_size <= 0) {
-        fprintf(stderr,"Error: File not a regular file or invalid size");
+    if (!S_ISREG(sb.st_mode) || sb.st_size < 0) {
+        fprintf(stderr,"Error: File not a regular file or invalid size\n");
         goto cleanup;
     }
 
@@ -107,23 +107,23 @@ static char* read_file(const char* path, size_t** fileSize) {
 
     // Allocate memory with alignment
     if (posix_memalign((void**)&string, 32, sb.st_size) != 0) {
-        fprintf(stderr,"Error in allocating aligned memory");
+        fprintf(stderr,"Error in allocating aligned memory\n");
         goto cleanup;
     }
     
     if (fread(string, 1, sb.st_size, file) != (size_t)sb.st_size) {
-        fprintf(stderr, "Error reading file");
+        fprintf(stderr, "Error reading file\n");
         free(string);
         string = NULL;
         goto cleanup;
     }
 
-    //string[sb.st_size] = '\0';
+    
 
 cleanup:
     if (file) {
         if (fclose(file) == EOF) {
-            perror("Error closing file");
+            fprintf(stderr,"Error closing file\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -140,17 +140,17 @@ static void write_file (const char* path, const char* string, size_t mlen){
     FILE* file = NULL;
     
     if(!(file = fopen(path, "w"))) {
-        fprintf(stderr,"An error occurred while opening the file");
+        fprintf(stderr,"An error occurred while opening the file\n");
         exit(EXIT_FAILURE);
     }
 
     if(fwrite(string, 1, mlen, file) != mlen){
-        fprintf(stderr,"Error writing to file");
+        fprintf(stderr,"Error writing to file\n");
         exit(EXIT_FAILURE);
     }
 
     if((fclose(file)) == EOF) {
-        fprintf(stderr,"Error closing file");
+        fprintf(stderr,"Error closing file\n");
         exit(EXIT_FAILURE);
     }
     
