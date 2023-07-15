@@ -46,13 +46,13 @@ void print_help() {
     printf("\t -k, --key                  (REQUIRED) set the key for salsa20 calculation (32 bytes of hexadecimal) \n");
     printf("\t -i, --init_vector          (REQUIRED) set the initialisation vector (8 bytes of hexadecimal) \n");
     printf("\t -o, --output_file          (REQUIRED) set the output file path \n");
-    printf("\t -h, --help                 Display help page then exit the program\n \n");
+    printf("\t -h, --help                 Display help page then exit the program\n");
+    printf("\t -d, --debug                Enter debug mode to check the correctness of both implementation\n\n");
     printf("Additionally, the program requires a positional argument that specify the input file path. \n \n");
     printf("All options with argument accept both argument with or without whitespace after the -option,\n");
     printf("meaning the program accepts both -B100 and -B 100.\n");
     printf("Hexadecimal arguments do not require the prefix 0x. Simply put e.g. -i 0123abcde.\n");
 
-    //TODO: adjust this part after talking with group (what is the acceptable format for iv and key: hex or decimal, length less than 32/16?)
     printf("\n");
     printf("Command line example to run the program: \n");
     printf("\t With the improved implementation (0),\n");
@@ -91,26 +91,36 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
             return;
         }
     }
-    int ret;
-    for (size_t i = 0; i < hex_length; i += 8) {
-    uint32_t word = 0;
-    for (int j = 0; j < 4; j++) { // change 8 to 4, because you read 2 hexadecimal digits (or 1 byte) at a time
-        uint8_t byte;
-        ret = sscanf(&hex[i + j * 2], "%2hhx", &byte);
-        if (ret != 1) {
-            fprintf(stderr, "Error reading byte in key: %ld\n", i + j * 2);
-            exit(EXIT_FAILURE);
-            return;
-        }
-        word |= (uint32_t)byte << (j * 8);
-    }
-    out_array[i / 8] = word;
+    for (size_t i = 0; i < array_size; i++) {
+        char hexGroup[9];  
+        memcpy(hexGroup, hex + (i * 8), 8);
+        hexGroup[8] = '\0';
+
+        out_array[array_size - 1 - i] = strtoul(hexGroup, NULL, 16);
     }
 
-    // //uncomment to see the output
-    // for(size_t i = 0; i < array_size; i++) {
-    //     printf("array[%zu] = 0x%08x\n", i, out_array[i]);
+    // int ret;
+    // for (size_t i = 0; i < hex_length; i += 8) {
+    // uint32_t word = 0;
+    // for (int j = 0; j < 4; j++) { // change 8 to 4, because you read 2 hexadecimal digits (or 1 byte) at a time
+    //     uint8_t byte;
+    //     ret = sscanf(&hex[i + j * 2], "%2hhx", &byte);
+    //     if (ret != 1) {
+    //         fprintf(stderr, "Error reading byte in key: %ld\n", i + j * 2);
+    //         exit(EXIT_FAILURE);
+    //         return;
+    //     }
+    //     word |= (uint32_t)byte << (j * 8);
     // }
+    // out_array[i / 8] = word;
+    // }
+
+    //uncomment to see the output
+
+    printf("FOR DEBUGGING PURPOSE (see util.c) - array of key is \n");
+    for(size_t i = 0; i < array_size; i++) {
+        printf("array[%zu] = 0x%08x\n", i, out_array[i]);
+    }
 
 
 }
@@ -134,18 +144,7 @@ uint64_t hex_to_little_endian_uint64(const char* hex) {
         }
     }
 
-    int ret;
-    // Convert hex string to uint64_t
-    for (size_t i = 0; i < hex_length; i += 2) { //2 hex digits per byte
-        uint8_t byte;
-        ret = sscanf(&hex[i], "%2hhx", &byte);
-        if (ret != 1) {
-            fprintf(stderr, "Error reading byte in nonce\n");
-            exit(EXIT_FAILURE);
-            
-        }
-        iv |= (uint64_t)byte << (i * 4); // Shift 8 bits for every bytes
-    }
+    iv = strtoul(hex, NULL, 16);
     printf("IV after little endian = 0x%08lx. COMMENT OUT LATER (util.c :hex_to_little_endian_uint64)\n", iv);
     return iv;
 }

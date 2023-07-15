@@ -325,15 +325,23 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
   printf("keyCounter_1 : 0x%08x\n",count2);
   */
 
-  
+  //Measuring the performance of salsa20_core_v1 with clock(), taking the average for n iterations, with n being coreCounter times
+  // clock_t start, end;
+  // double elapsed_time = 0;
   for (size_t i = 0; i < coreCounter; i++)
   {
     //Assigning C0 and C1
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
     
+    // start = clock();
+
     //outputMatrix contains output of core
     salsa20_core_v1(outputMatrix,inputMatrix);
+
+    // end = clock();
+    // elapsed_time += (((double) (end - start)) / CLOCKS_PER_SEC) * 1000000; //result in microseconds
+
 
     //initializing key for each byte and pointer to outputMatrix
       for (size_t j = 0; j < 64; j++)
@@ -346,6 +354,10 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
     keyCounter++;
     charPointer = (uint8_t*)outputMatrix;
   }
+
+  // measuring performance on salsa20_core
+  // double average_time = elapsed_time / coreCounter;
+  // printf("Average time needed for salsa20_core_v1: %f microseconds", average_time);
 
   if (restChar != 0)
   {
@@ -450,12 +462,12 @@ int main(int argc, char *argv[]) {
           break;
       case 'V':
           if(!is_positive_number(optarg)){
-              printf("Error: Version number must be either 0 or 1 \n");
+              fprintf(stderr, "Version number must be either 0 or 1 \n");
               exit(EXIT_FAILURE);
           }
           version_number = atoi(optarg);
           if(version_number < 0 || version_number > IMPLEMENTATION_MAX) {
-              printf("Invalid version number. Please see the help page with ./main -h for more information\n");
+              fprintf(stderr, "Invalid version number. Please see the help page with ./main -h for more information\n");
               exit(EXIT_FAILURE);
           }
           break;
@@ -497,13 +509,13 @@ int main(int argc, char *argv[]) {
               if(is_positive_number(optarg)){
                   benchmark_iteration = strtoull(optarg, NULL, 10);
                   if(benchmark_iteration > ITERATION_MAX || benchmark_iteration < 1){
-                      print_error("main", "Benchmark mode: invalid number of iterations. Please see the help page with ./main -h for more information\n");
+                      fprintf(stderr, "Benchmark mode: invalid number of iterations. Please see the help page with ./main -h for more information\n");
                       exit(EXIT_FAILURE);
                       break;
                   }
               }
               else {
-                  print_error("main", "Benchmark mode only accepts positive number. Please see the help page with ./main -h for more information\n");
+                  fprintf(stderr, "Error: Benchmark mode only accepts positive number. Please see the help page with ./main -h for more information\n");
                   exit(EXIT_FAILURE);
                   break;
               }
@@ -511,7 +523,6 @@ int main(int argc, char *argv[]) {
           }
           else if (optind < argc && is_positive_number(argv[optind])) {
               benchmark_iteration = strtoull(argv[optind], NULL, 10);
-              printf("benchmark number is %ld\n", benchmark_iteration);
               optind++;  // increment optind so the next getopt call will skip this argument
               break;
           }
@@ -526,7 +537,7 @@ int main(int argc, char *argv[]) {
   */
 
   if (argv[optind] == NULL) {
-    printf("Input file missing \n");
+    fprintf(stderr, "Error: Input file missing \n");
     exit(EXIT_FAILURE);
   }
 
@@ -534,40 +545,30 @@ int main(int argc, char *argv[]) {
   char *toBeFreed = (char*)input_text;
   printf("Input file \t: %s\n", argv[optind]);
   if (input_text == NULL) {
-    printf("Input file invalid \n");
+    fprintf(stderr, "Error: Input file invalid \n");
     exit(EXIT_FAILURE);
   }
 
   optind++;
   if (optind < argc) {
-    printf("Too many arguments \n");
+    fprintf(stderr, "Error: Too many arguments \n");
     exit(EXIT_FAILURE);
   }
 
   if(!key_flag){
-    printf("Key missing. Please see the help page with ./main -h for more information\n");
+    fprintf(stderr, "Key missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
   if(!iv_flag){
-    printf("Initialisation vector missing. Please see the help page with ./main -h for more information\n");
+    fprintf(stderr, "Initialisation vector missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
   if(!output_flag){
-    printf("Output file missing. Please see the help page with ./main -h for more information\n");
+    fprintf(stderr, "Output file missing. Please see the help page with ./main -h for more information\n");
     exit(EXIT_FAILURE);
   }
 
-
-
-  /*
-  Section: Optional_Output START
-  The following output is not important: only there to help with debugging. 
-  */
   printf("Output file \t: %s\n", output_file);
-  /*
-  Section: Optional_Output END
-  */
-
 
 
   /*
@@ -577,7 +578,7 @@ int main(int argc, char *argv[]) {
   */
   mlen = *file_size;
   if (mlen == 0) {
-    printf("Input file is empty, nothing to encrypt/decrypt \n");
+    fprintf(stderr, "Error: Input file is empty, nothing to encrypt/decrypt \n");
     exit(EXIT_FAILURE);
   }
   uint8_t *cipher = NULL;
@@ -632,7 +633,7 @@ int main(int argc, char *argv[]) {
       write_file(output_file,(char *)cipher,mlen);
       break;
     default:
-      printf("Version number is invalid. \n");
+      fprintf(stderr, "Error: Version number is invalid. \n");
       exit(EXIT_FAILURE);
     }
 
@@ -676,21 +677,21 @@ How this section works:
               salsa20_crypt(mlen, (uint8_t *)input_text, cipherTwo, key, iv);
               break;
           default: 
-              printf("Error in debug mode: version number invalid \n");
+              fprintf(stderr, "Error in debug mode: version number invalid \n");
               exit(EXIT_FAILURE);
       }
 
       //compare cipher and cipherTwo
       if(!memcmp((char*)cipher, (char*)cipherTwo, mlen)){
-          printf("Correctness check passed: both versions produce the same encrypted text \n");
+          printf("Correctness check passed: both versions produce the same encrypted text \n \n");
       }
-      else printf("Correctness check failed: both version produce different encrypted text \n");
+      else printf("Correctness check failed: both version produce different encrypted text \n \n");
 
       //use only for small texts
-      printf("mlen is %ld\n", mlen);
-      for(size_t i = 0; i < mlen; i++) {  
-      printf("cipher[%zu] = %02x, cipherTwo[%zu] = %02x\n", i, cipher[i], i, cipherTwo[i]);
-}
+//       printf("mlen is %ld\n", mlen);
+//       for(size_t i = 0; i < mlen; i++) {  
+//       printf("cipher[%zu] = %02x, cipherTwo[%zu] = %02x\n", i, cipher[i], i, cipherTwo[i]);
+// }
       free(cipherTwo);
   }
  
