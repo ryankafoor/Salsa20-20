@@ -60,7 +60,7 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
-#define ITERATION_MAX 10000
+#define ITERATION_MAX UINT_MAX
 #define IV_SIZE 8
 #define KEY_SIZE 16
 
