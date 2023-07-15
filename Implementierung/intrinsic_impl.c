@@ -85,11 +85,10 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 		//iteration 1
 		output[4] = rotate_bits_asm((output[0] + output[12]), 7) ^ output[4];
+		output[9] = rotate_bits_asm((output[5] + output[1]), 7) ^ output[9]; 
+		output[14] = rotate_bits_asm((output[10] + output[6]), 7) ^ output[14];
 		output[3] = rotate_bits_asm((output[15] + output[11]), 7) ^ output[3];  
-		output[9] = rotate_bits_asm((output[5] + output[1]), 7) ^ output[9];       
-		output[14] = rotate_bits_asm((output[10] + output[6]), 7) ^ output[14];       
-		     
-
+		      
 		output[8] = rotate_bits_asm((output[0] + output[4]), 9) ^ output[8];
 		output[13] = rotate_bits_asm((output[5] + output[9]), 9) ^ output[13];       
 		output[2] = rotate_bits_asm((output[10] + output[14]), 9) ^ output[2];       
