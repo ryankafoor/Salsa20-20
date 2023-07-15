@@ -23,10 +23,10 @@ static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8
 	*/
 
 	//512 bits divided onto 4 operations
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64), _mm_load_si128 ((__m128i const*) outputPtr)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+16, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+16), _mm_load_si128 ((__m128i const*) outputPtr+16)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+32, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+32), _mm_load_si128 ((__m128i const*) outputPtr+32)));
-	_mm_store_si128 ((__m128i*) cipherPtr+i*64+48, _mm_xor_si128 (_mm_load_si128 ((__m128i const*) msgPtr + i*64+48), _mm_load_si128 ((__m128i const*) outputPtr+48)));
+	_mm_store_si128 ((__m128i*) (cipherPtr+i*64), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) (msgPtr + i*64)), _mm_load_si128 ((__m128i const*) outputPtr)));
+	_mm_store_si128 ((__m128i*) (cipherPtr+i*64+16), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) (msgPtr + i*64+16)), _mm_load_si128 ((__m128i const*) (outputPtr+16))));
+	_mm_store_si128 ((__m128i*) (cipherPtr+i*64+32), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) (msgPtr + i*64+32)), _mm_load_si128 ((__m128i const*) (outputPtr+32))));
+	_mm_store_si128 ((__m128i*) (cipherPtr+i*64+48), _mm_xor_si128 (_mm_load_si128 ((__m128i const*) (msgPtr + i*64+48)), _mm_load_si128 ((__m128i const*) (outputPtr+48))));
 	
 }
 
@@ -44,7 +44,7 @@ static void avx_intrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_
 
 		//512 bits divided onto 2 operations
 		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64)),_mm256_load_si256 ((__m256i const*)outputPtr)));
-		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)outputPtr+32)));
+		_mm256_store_si256 ((__m256i*)(cipherPtr+i*64+32), _mm256_xor_si256 (_mm256_load_si256 ((__m256i const*)(msgPtr+i*64+32)),_mm256_load_si256 ((__m256i const*)(outputPtr+32))));
 
 	#endif
 }
@@ -223,11 +223,11 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 		
 		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
-		if(avx_supported){
-			avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
-		}else{
+		//if(avx_supported){
+		//	avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
+		//}else{
 			sse_instrinsic_func(cipherPtr, msgPtr, outputPtr, i);
-		}
+		//}
 			
 		keyCounter++;
         
