@@ -16,47 +16,6 @@
 
 
 
-// aligned_malloc(1000, 128) will return a memory address
-// that is a multiple of 128 and that points to memory of size 1000 bytes.
-//offset_t is a uint16_t, supports up to 64KB alignment, a size which is already unlikely to be used for alignment.
-/*
-typedef uint16_t offset_t;
-#define PTR_OFFSET_SZ sizeof(offset_t)
-
-void* aligned_malloc(size_t required_bytes, size_t alignment){
-  int offset = alignment - 1;
-  void* p_addr;
-  // we also need about 2 bytes for storing offset to get to orig malloc address during aligned_free().
-  uint32_t hdr_size = PTR_OFFSET_SZ + (alignment - 1);
-  if((p_addr = (void * ) malloc(required_bytes + hdr_size)) == NULL){
-  return NULL;
-  }
-  // a) bit-shift to move address to aligned_addr
-  //    Note that this operates on powers of two
-  //void* aligned_addr = (void * ) (((size_t)(p_addr) + offset) & ~(offset));
-  //b) OR use modulo operator to get how much to move forward
-  int move_forward = (alignment - ((size_t)p_addr % alignment));
-  void* aligned_addr= (void*)((size_t)p_addr + move_forward);
-  // store 16-bit offset instead of a 32bit or 64 bit platform address.
-  *((size_t *) aligned_addr - 1) = (size_t)(aligned_addr - p_addr);
-  return aligned_addr;
-}
-*/
-
-//void aligned_free(void *aligned_addr ){
-  /* Find the address stored by aligned_malloc() ,"size_t" bytes above the current pointer then free it using free() API.*/
-  /*
-  size_t offset = *((size_t *) aligned_addr);
-  // get to p_addr using offset and aligned_addr value and call 
-  
-  // free() on it.
-  free((void *)(*((size_t*) aligned_addr) - offset));
-}
-*/
-
-
-
-
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
@@ -129,17 +88,17 @@ static char* read_file(const char* path, size_t** fileSize) {
     struct stat sb;
 
     if (!(file = fopen(path, "r"))) {
-        perror("An error occurred while opening the file");
+        fprintf(stderr,"An error occurred while opening the file");
         goto cleanup;
     }
 
     if (fstat(fileno(file), &sb) == -1) {
-        perror("Status of file could not be checked");
+        fprintf(stderr,"Status of file could not be checked");
         goto cleanup;
     }
 
     if (!S_ISREG(sb.st_mode) || sb.st_size <= 0) {
-        perror("Error: File not a regular file or invalid size");
+        fprintf(stderr,"Error: File not a regular file or invalid size");
         goto cleanup;
     }
 
@@ -148,12 +107,12 @@ static char* read_file(const char* path, size_t** fileSize) {
 
     // Allocate memory with alignment
     if (posix_memalign((void**)&string, 32, sb.st_size) != 0) {
-        perror("Error in allocating aligned memory");
+        fprintf(stderr,"Error in allocating aligned memory");
         goto cleanup;
     }
     
     if (fread(string, 1, sb.st_size, file) != (size_t)sb.st_size) {
-        perror("Error reading file");
+        fprintf(stderr, "Error reading file");
         free(string);
         string = NULL;
         goto cleanup;
@@ -181,17 +140,17 @@ static void write_file (const char* path, const char* string, size_t mlen){
     FILE* file = NULL;
     
     if(!(file = fopen(path, "w"))) {
-        perror("An error occurred while opening the file");
+        fprintf(stderr,"An error occurred while opening the file");
         exit(EXIT_FAILURE);
     }
 
     if(fwrite(string, 1, mlen, file) != mlen){
-        perror("Error writing to file");
+        fprintf(stderr,"Error writing to file");
         exit(EXIT_FAILURE);
     }
 
     if((fclose(file)) == EOF) {
-        perror("Error closing file");
+        fprintf(stderr,"Error closing file");
         exit(EXIT_FAILURE);
     }
     
@@ -311,18 +270,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
   //Counter value in key
   uint64_t keyCounter = 0;
 
-  /*
-  uint32_t count1 = keyCounter & 0xFFFFFFFF;
-  uint32_t count2 = (keyCounter>>32) & 0xFFFFFFFF;
 
-  inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
-  inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
-  printf("keyCounter_0 : 0x%08x\n",inputMatrix[8]);
-  printf("keyCounter_1 : 0x%08x\n",inputMatrix[9]);
-  printf("without little endian :\n");
-  printf("keyCounter_0 : 0x%08x\n",count1);
-  printf("keyCounter_1 : 0x%08x\n",count2);
-  */
 
   //Measuring the performance of salsa20_core_v1 with clock(), taking the average for n iterations, with n being coreCounter times
   // clock_t start, end;
@@ -376,28 +324,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 }
 
 
-/*
-static uint8_t* test(uint8_t *toEncrypt, size_t mlen){
-  //These two values we can alter
-  uint32_t key[8] = {1,2,3,4,5,6,7,8};
-  uint64_t iv = 231;
-  //
-  uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
-  if (cipher==NULL)
-  {
-    perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen)");
-    exit(EXIT_FAILURE);
-  }
-  if (mlen < 256)
-  {
-    salsa20_crypt_v1(mlen,toEncrypt,cipher,key,iv);
-  }
-  
-  salsa20_crypt(mlen,toEncrypt,cipher,key,iv);
 
-  return cipher;
-}
-*/
 
 
 
@@ -585,7 +512,7 @@ int main(int argc, char *argv[]) {
   //uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
   if (posix_memalign((void **)&cipher,32, mlen*sizeof(uint8_t)) != 0)
   {
-    perror("Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen \n)");
+    fprintf(stderr,"Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen \n)");
     exit(EXIT_FAILURE);
   }
 
@@ -664,7 +591,7 @@ How this section works:
       printf("Comparing encrypted text using both versions\n");
       uint8_t *cipherTwo = NULL;
       if (posix_memalign((void **)&cipherTwo,32, mlen*sizeof(uint8_t)) != 0){
-          perror("Error allocating memory for CipherTwo inside debug mode\n)");
+          fprintf(stderr,"Error allocating memory for CipherTwo inside debug mode\n)");
           exit(EXIT_FAILURE);
       }
 
