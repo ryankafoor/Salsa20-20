@@ -1,4 +1,4 @@
-CFLAGS = -O0 -march=native -std=gnu17 -fsanitize=address#Options can be added here 
+CFLAGS = -O0 -march=native -std=gnu17 #Options can be added here 
 # use -mno-avx if avx should be disabled
 WFLAGS = -Wall -Wextra -Wpedantic 
 

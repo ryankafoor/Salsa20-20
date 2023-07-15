@@ -214,8 +214,8 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 	for (size_t i = 0; i < coreCounter; i++)
 	{
 		//Assigning C0 and C1
-		inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
-		inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
+		inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+		inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 	
 		//outputMatrix contains output of core
 		salsa20_core(outputMatrix,inputMatrix);
@@ -236,8 +236,8 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
     
 	if (restChar != 0)
 	{
-		inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
-		inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
+		inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+		inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 
 		salsa20_core(outputMatrix,inputMatrix);
 

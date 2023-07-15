@@ -12,7 +12,7 @@
 #include <time.h>
 #include "util.h"
 #include "util.c"
-
+#include <sys/stat.h>
 
 
 
@@ -124,7 +124,7 @@ static char* read_file(const char* path) {
 
 
 //this function should be used to read from file for the optimised implementation
-static char* read_file(const char* path) {
+static char* read_file(const char* path, size_t** fileSize) {
     char* string = NULL;
     FILE* file = NULL;
     struct stat sb;
@@ -145,14 +145,14 @@ static char* read_file(const char* path) {
     }
 
     // Calculate the required size for alignment
-    size_t required_size = sb.st_size + 1;
+    *fileSize = &sb.st_size;
 
     // Allocate memory with alignment
-    if (posix_memalign((void**)&string, 16, required_size) != 0) {
+    if (posix_memalign((void**)&string, 32, sb.st_size) != 0) {
         perror("Error in allocating aligned memory");
         goto cleanup;
     }
-
+    
     if (fread(string, 1, sb.st_size, file) != (size_t)sb.st_size) {
         perror("Error reading file");
         free(string);
@@ -160,7 +160,7 @@ static char* read_file(const char* path) {
         goto cleanup;
     }
 
-    string[sb.st_size] = '\0';
+    //string[sb.st_size] = '\0';
 
 cleanup:
     if (file) {
@@ -177,17 +177,16 @@ cleanup:
 
 
    
-static void write_file (const char* path, const char* string){
+static void write_file (const char* path, const char* string, size_t mlen){
     
-    FILE* file;
-    size_t len = strlen(string);
+    FILE* file = NULL;
     
     if(!(file = fopen(path, "w"))) {
         perror("An error occurred while opening the file");
         exit(EXIT_FAILURE);
     }
 
-    if(fwrite(string, 1, len, file) != len){
+    if(fwrite(string, 1, mlen, file) != mlen){
         perror("Error writing to file");
         exit(EXIT_FAILURE);
     }
@@ -196,7 +195,7 @@ static void write_file (const char* path, const char* string){
         perror("Error closing file");
         exit(EXIT_FAILURE);
     }
-
+    
 }
 
 
@@ -312,7 +311,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
   //Counter value in key
   uint64_t keyCounter = 0;
-  
+
   /*
   uint32_t count1 = keyCounter & 0xFFFFFFFF;
   uint32_t count2 = (keyCounter>>32) & 0xFFFFFFFF;
@@ -330,8 +329,8 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
   for (size_t i = 0; i < coreCounter; i++)
   {
     //Assigning C0 and C1
-    inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
-    inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
+    inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+    inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
     
     //outputMatrix contains output of core
     salsa20_core_v1(outputMatrix,inputMatrix);
@@ -350,12 +349,12 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
   if (restChar != 0)
   {
-    inputMatrix[8]=to_little_endian(keyCounter & 0xFFFFFFFF);
-    inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
+    inputMatrix[8]=keyCounter & 0xFFFFFFFF;
+    inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
 
     salsa20_core_v1(outputMatrix,inputMatrix);
-    
-    
+
+
     for (size_t j = coreCounter*64; j < mlen; j++)
     {
       cipher[j] = msg[j] ^ *charPointer;
@@ -418,6 +417,7 @@ int main(int argc, char *argv[]) {
   clock_t start, end;
 
   size_t mlen = 0;
+  size_t* file_size;
 
 
   /*
@@ -464,6 +464,12 @@ int main(int argc, char *argv[]) {
           return EXIT_SUCCESS;
       case 'o':
           output_file = optarg;
+          struct stat buffer;
+          if(stat(output_file, &buffer)) {
+            fprintf(stderr, "Output file does not exist or is inaccessible \n");
+            exit(EXIT_FAILURE);
+          }
+
           output_flag = 1;
           break;
       case 'k':
@@ -524,7 +530,7 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  input_text = read_file(argv[optind]);
+  input_text = read_file(argv[optind],&file_size);
   char *toBeFreed = (char*)input_text;
   printf("Input file \t: %s\n", argv[optind]);
   if (input_text == NULL) {
@@ -565,11 +571,11 @@ int main(int argc, char *argv[]) {
 
 
   /*
-  Section: Input_Handling
+  Section: Input_Handling 
   Handle input file: extract message and message length, update mlen.
   Input file should be valid and required arguments are provided.
   */
-  mlen = strlen(input_text);
+  mlen = *file_size;
   if (mlen == 0) {
     printf("Input file is empty, nothing to encrypt/decrypt \n");
     exit(EXIT_FAILURE);
@@ -593,7 +599,7 @@ int main(int argc, char *argv[]) {
   else{
     printf("Implementation version:\t %d \n", version_number);
   }
-
+  
 
 
   /*
@@ -614,7 +620,7 @@ int main(int argc, char *argv[]) {
       salsa20_crypt(mlen, (uint8_t *)input_text, cipher, key, iv);
       }
 
-      write_file(output_file,(char *)cipher);
+      write_file(output_file,(char *)cipher,mlen);
       break;
     case 1:
       printf("Version 1 selected, encryption in process...\n");
@@ -623,7 +629,7 @@ int main(int argc, char *argv[]) {
       salsa20_crypt_v1(mlen, (uint8_t *)input_text, cipher, key, iv);
       }
 
-      write_file(output_file,(char *)cipher);
+      write_file(output_file,(char *)cipher,mlen);
       break;
     default:
       printf("Version number is invalid. \n");
@@ -640,8 +646,8 @@ int main(int argc, char *argv[]) {
 
 
 
-/*
-DEBUG SECTION -- Option / Flag -d set
+  /*
+  DEBUG SECTION -- Option / Flag -d set
 
 Correctness check:
   - using the input text, run the algorithm on both versions to create two encrypted texts
