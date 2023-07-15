@@ -95,7 +95,7 @@ static char* read_file(const char* path) {
   }
 
 
-  if((string = aligned_malloc(sb.st_size + 1,32)) == NULL){ //st_size does not count the null byte
+  if(!(string = malloc(sb.st_size + 1))){ //st_size does not count the null byte
     perror("Error in allocating memory");
     goto cleanup;
   }
@@ -122,7 +122,6 @@ static char* read_file(const char* path) {
 }
 */
 
-//Test Implementation for alligned read file. Do not Modify!!
 
 //this function should be used to read from file for the optimised implementation
 static char* read_file(const char* path) {
@@ -149,7 +148,7 @@ static char* read_file(const char* path) {
     size_t required_size = sb.st_size + 1;
 
     // Allocate memory with alignment
-    if (posix_memalign((void**)&string, 32, required_size) != 0) {
+    if (posix_memalign((void**)&string, 16, required_size) != 0) {
         perror("Error in allocating aligned memory");
         goto cleanup;
     }
@@ -313,6 +312,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
   //Counter value in key
   uint64_t keyCounter = 0;
+  
   /*
   uint32_t count1 = keyCounter & 0xFFFFFFFF;
   uint32_t count2 = (keyCounter>>32) & 0xFFFFFFFF;
@@ -342,18 +342,7 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
         cipher[i*64+j] = msg[i*64+j] ^ *charPointer;
         charPointer++;
       }
-      /*
-      ============ SIMD APPROACH ============
-      */
-      //for (size_t simdCounter = 0; simdCounter < 4; simdCounter++)
-      //{
-      //__m128i simdReg1 = _mm_loadu_si128((__m128i_u *)msg);
-      //__m128i simdReg2 = _mm_loadu_si128((__m128i_u *)outputMatrix);
-
-      //}
-      /*
-      =======================================
-      */
+     
       
     keyCounter++;
     charPointer = (uint8_t*)outputMatrix;
@@ -365,11 +354,8 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
     inputMatrix[9]=to_little_endian((keyCounter >> 32) & 0xFFFFFFFF);
 
     salsa20_core_v1(outputMatrix,inputMatrix);
-    //Check values of OutputMatrix
-    //printf("Output Matrix :\n");
-    //for ( int x = 0 ; x < 16 ; x++){
-      //printf("%u\n",outputMatrix[x]);
-    //}
+    
+    
     for (size_t j = coreCounter*64; j < mlen; j++)
     {
       cipher[j] = msg[j] ^ *charPointer;

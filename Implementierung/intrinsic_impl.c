@@ -223,11 +223,11 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 		
 		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
-		//if(avx_supported){
-		//	avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
-		//}else{
+		if(avx_supported){
+			avx_intrinsic_func(cipherPtr, msgPtr, outputPtr, i);
+		}else{
 			sse_instrinsic_func(cipherPtr, msgPtr, outputPtr, i);
-		//}
+		}
 			
 		keyCounter++;
         
