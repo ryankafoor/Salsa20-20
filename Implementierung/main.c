@@ -60,7 +60,6 @@ void* aligned_malloc(size_t required_bytes, size_t alignment){
 
 //how many implementations are there?
 #define IMPLEMENTATION_MAX 1
-#define ITERATION_MAX UINT_MAX
 #define IV_SIZE 8
 #define KEY_SIZE 16
 
@@ -508,7 +507,7 @@ int main(int argc, char *argv[]) {
           if(optarg ){
               if(is_positive_number(optarg)){
                   benchmark_iteration = strtoull(optarg, NULL, 10);
-                  if(benchmark_iteration > ITERATION_MAX || benchmark_iteration < 1){
+                  if(benchmark_iteration < 1){
                       fprintf(stderr, "Benchmark mode: invalid number of iterations. Please see the help page with ./main -h for more information\n");
                       exit(EXIT_FAILURE);
                       break;
