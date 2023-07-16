@@ -513,6 +513,7 @@ How this section works:
   - from the previous section, cipher is updated with the encrypted text, either using V0 or V1
   - we check which version was used, and create another encrypted text based on the unused version
   - then we compare both texts
+  
 */
   if(debug_flag){
       printf("\nDebug mode selected, checking the correctness of the program\n");
