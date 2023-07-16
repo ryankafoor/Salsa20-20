@@ -71,7 +71,7 @@ uint32_t rotate_bits_asm(uint32_t number, uint8_t i);
 
 
 
-static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
+ void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 
 	for (int i = 0; i < 16; i++) {
@@ -137,7 +137,7 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 
 
 
-static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+ void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
 
 	//checks if avx extension is supported
 	uint8_t avx_supported = check_avx_support();

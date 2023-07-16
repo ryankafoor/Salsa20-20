@@ -143,7 +143,7 @@ static void transpose_1( uint32_t array[16]){
 
 //Naive C implementation without intrinsics
 
-static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
+ void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
 
   for (int i = 0; i < 16; i++) {
     output[i] = input[i];
@@ -183,7 +183,7 @@ static void salsa20_core_v1(uint32_t output[16], const uint32_t input[16]){
 }
 
 
-static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
+ void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[mlen], uint32_t key[8], uint64_t iv){
   
   size_t coreCounter = mlen / 64;
 
