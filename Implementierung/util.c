@@ -117,10 +117,10 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
 
     //uncomment to see the output
 
-    printf("FOR DEBUGGING PURPOSE (see util.c) - array of key is \n");
-    for(size_t i = 0; i < array_size; i++) {
-        printf("array[%zu] = 0x%08x\n", i, out_array[i]);
-    }
+    // printf("FOR DEBUGGING PURPOSE (see util.c) - array of key is \n");
+    // for(size_t i = 0; i < array_size; i++) {
+    //     printf("array[%zu] = 0x%08x\n", i, out_array[i]);
+    // }
 
 
 }
