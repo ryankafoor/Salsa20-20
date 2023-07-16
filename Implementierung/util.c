@@ -51,7 +51,12 @@ void print_help() {
     printf("Additionally, the program requires a positional argument that specify the input file path. \n \n");
     printf("All options with argument accept both argument with or without whitespace after the -option,\n");
     printf("meaning the program accepts both -B100 and -B 100.\n");
-    printf("Hexadecimal arguments do not require the prefix 0x. Simply put e.g. -i 0123abcde.\n");
+    printf("Hexadecimal arguments do not require the prefix 0x. Simply put e.g. -i 0123abcde.\n\n");
+
+    printf("Furthermore we also provided a script to generate a text file.\n");
+    printf("As an example to generate a text file with 2 millions characters, we could run:\n\n");
+    printf("\t make input_custom CUSTOM_NUM=\"2000000\"\n\n");
+    printf("The generated text file will have the name input.txt\n");
 
     printf("\n");
     printf("Command line example to run the program: \n");
@@ -148,7 +153,6 @@ uint32_t hex_to_decimal(char c) {
 void pad_hex_string(char* input, char* output, size_t output_length) {
     size_t input_length = strlen(input);
     
-    
     if (input_length > output_length) {
         if(output_length == 64) {
             fprintf(stderr, "Invalid key input: key length should be less than %zu hex digits\n", output_length);
@@ -181,5 +185,4 @@ void pad_hex_string(char* input, char* output, size_t output_length) {
     
     // Null terminate the output string
     output[output_length] = '\0';
-    //size_t output_length_check = strlen(output);
 }
