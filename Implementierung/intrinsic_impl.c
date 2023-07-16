@@ -6,11 +6,11 @@
 #include <time.h>
 
  
-//constants read as expand 32-byte k, written in 4 bytes of little endian
-static const uint32_t const_int_1 = 0x61707865; //apxe
-static const uint32_t const_int_2 = 0x3320646e; //3 dn
-static const uint32_t const_int_3 = 0x79622d32; //yb-2
-static const uint32_t const_int_4 = 0x6b206574; //k et
+//constants read as "expand 32-byte k", written in 4 bytes of little endian
+static const uint32_t const_int_1 = 0x61707865; //expa
+static const uint32_t const_int_2 = 0x3320646e; //nd 3
+static const uint32_t const_int_3 = 0x79622d32; //2-by
+static const uint32_t const_int_4 = 0x6b206574; //te k
 
 
 static void sse_instrinsic_func(uint8_t* cipherPtr, const uint8_t* msgPtr, uint8_t* outputPtr, size_t i){

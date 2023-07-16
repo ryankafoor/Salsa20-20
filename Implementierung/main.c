@@ -23,10 +23,10 @@
 #define KEY_SIZE 16
 
 //constants read as expand 32-byte k, written in 4 bytes of little endian
-static const uint32_t const1 = 0x61707865; //apxe
-static const uint32_t const2 = 0x3320646e; //3 dn
-static const uint32_t const3 = 0x79622d32; //yb-2
-static const uint32_t const4 = 0x6b206574; //k et
+static const uint32_t const1 = 0x61707865; //expa
+static const uint32_t const2 = 0x3320646e; //nd 3
+static const uint32_t const3 = 0x79622d32; //2-by
+static const uint32_t const4 = 0x6b206574; //te k
 
 
 //this function should be used to read from file for the optimised implementation
