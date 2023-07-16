@@ -98,31 +98,6 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
 
         out_array[array_size - 1 - i] = strtoul(hexGroup, NULL, 16);
     }
-
-    // int ret;
-    // for (size_t i = 0; i < hex_length; i += 8) {
-    // uint32_t word = 0;
-    // for (int j = 0; j < 4; j++) { // change 8 to 4, because you read 2 hexadecimal digits (or 1 byte) at a time
-    //     uint8_t byte;
-    //     ret = sscanf(&hex[i + j * 2], "%2hhx", &byte);
-    //     if (ret != 1) {
-    //         fprintf(stderr, "Error reading byte in key: %ld\n", i + j * 2);
-    //         exit(EXIT_FAILURE);
-    //         return;
-    //     }
-    //     word |= (uint32_t)byte << (j * 8);
-    // }
-    // out_array[i / 8] = word;
-    // }
-
-    //uncomment to see the output
-
-    // printf("FOR DEBUGGING PURPOSE (see util.c) - array of key is \n");
-    // for(size_t i = 0; i < array_size; i++) {
-    //     printf("array[%zu] = 0x%08x\n", i, out_array[i]);
-    // }
-
-
 }
 
 
@@ -145,7 +120,6 @@ uint64_t hex_to_little_endian_uint64(const char* hex) {
     }
 
     iv = strtoul(hex, NULL, 16);
-    printf("IV after little endian = 0x%08lx. COMMENT OUT LATER (util.c :hex_to_little_endian_uint64)\n", iv);
     return iv;
 }
 
@@ -163,31 +137,12 @@ uint32_t hex_to_decimal(char c) {
         return 0;
 }
 
-uint32_t to_little_endian(uint32_t number) {
-    //check whether system using little endian 
-     return bswap_32(number);
-    
-}
-
 
 /*/
     ================== ^^^^ Handling Hex Input ^^^^ ==================
 */
 
 
-size_t get_file_length(const char *filename) {
-    FILE *fp = fopen(filename, "r");
-    if (!fp) {
-        fprintf(stderr, "Error opening file %s\n", filename);
-        return -1;
-    }
-
-    fseek(fp, 0, SEEK_END);
-    size_t length = ftell(fp);
-
-    fclose(fp);
-    return length;
-}
 
 
 void pad_hex_string(char* input, char* output, size_t output_length) {

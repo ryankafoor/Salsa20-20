@@ -104,49 +104,24 @@ static void salsa20_core(uint32_t output[16], const uint32_t input[16]){
 		output[10] = rotate_bits_asm((output[6] + output[2]), 18) ^ output[10];       
 		output[15] = rotate_bits_asm((output[11] + output[7]), 18) ^ output[15];
         
-        // //iteration 2 on transposed matrix
-		// output[1] = rotate_bits_asm((output[0] + output[3]), 7) ^ output[1];
-		// output[6] = rotate_bits_asm((output[5] + output[4]), 7) ^ output[6];       
-		// output[11] = rotate_bits_asm((output[10] + output[9]), 7) ^ output[11];       
-		// output[12] = rotate_bits_asm((output[15] + output[14]), 7) ^ output[12];       
-
-		// output[2] = rotate_bits_asm((output[0] + output[1]), 9) ^ output[2];
-		// output[7] = rotate_bits_asm((output[5] + output[6]), 9) ^ output[7];       
-		// output[8] = rotate_bits_asm((output[10] + output[11]), 9) ^ output[8];       
-		// output[13] = rotate_bits_asm((output[15] + output[12]), 9) ^ output[13]; 
-	
-		// output[3] = rotate_bits_asm((output[2] + output[1]), 13) ^ output[3];
-		// output[4] = rotate_bits_asm((output[7] + output[6]), 13) ^ output[4];       
-		// output[9] = rotate_bits_asm((output[8] + output[11]), 13) ^ output[9];       
-		// output[14] = rotate_bits_asm((output[13] + output[12]), 13) ^ output[14];
-		
-		// output[0] = rotate_bits_asm((output[3] + output[2]), 18) ^ output[0];
-		// output[5] = rotate_bits_asm((output[4] + output[7]), 18) ^ output[5];       
-		// output[10] = rotate_bits_asm((output[9] + output[8]), 18) ^ output[10];       
-		// output[15] = rotate_bits_asm((output[14] + output[13]), 18) ^ output[15];
-		
-
-		//REORDERING:
+        //iteration 2 on transposed matrix
 		output[1] = rotate_bits_asm((output[0] + output[3]), 7) ^ output[1];
-		output[2] = rotate_bits_asm((output[0] + output[1]), 9) ^ output[2];
-		output[3] = rotate_bits_asm((output[2] + output[1]), 13) ^ output[3];
-		output[0] = rotate_bits_asm((output[3] + output[2]), 18) ^ output[0];
-		output[6] = rotate_bits_asm((output[5] + output[4]), 7) ^ output[6];     
-		output[7] = rotate_bits_asm((output[5] + output[6]), 9) ^ output[7];
-		output[4] = rotate_bits_asm((output[7] + output[6]), 13) ^ output[4];       
-    	output[5] = rotate_bits_asm((output[4] + output[7]), 18) ^ output[5];       
-
+		output[6] = rotate_bits_asm((output[5] + output[4]), 7) ^ output[6];       
 		output[11] = rotate_bits_asm((output[10] + output[9]), 7) ^ output[11];       
 		output[12] = rotate_bits_asm((output[15] + output[14]), 7) ^ output[12];       
 
-		
-		    
+		output[2] = rotate_bits_asm((output[0] + output[1]), 9) ^ output[2];
+		output[7] = rotate_bits_asm((output[5] + output[6]), 9) ^ output[7];       
 		output[8] = rotate_bits_asm((output[10] + output[11]), 9) ^ output[8];       
 		output[13] = rotate_bits_asm((output[15] + output[12]), 9) ^ output[13]; 
 	
+		output[3] = rotate_bits_asm((output[2] + output[1]), 13) ^ output[3];
+		output[4] = rotate_bits_asm((output[7] + output[6]), 13) ^ output[4];       
 		output[9] = rotate_bits_asm((output[8] + output[11]), 13) ^ output[9];       
 		output[14] = rotate_bits_asm((output[13] + output[12]), 13) ^ output[14];
 		
+		output[0] = rotate_bits_asm((output[3] + output[2]), 18) ^ output[0];
+		output[5] = rotate_bits_asm((output[4] + output[7]), 18) ^ output[5];       
 		output[10] = rotate_bits_asm((output[9] + output[8]), 18) ^ output[10];       
 		output[15] = rotate_bits_asm((output[14] + output[13]), 18) ^ output[15];
 	}
@@ -210,23 +185,16 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 	//Counter value in key
 	uint64_t keyCounter = 0;
 
-	// for measuring the performance of salsa20_core_v1
-	// clock_t start, end;
-	// double elapsed_time = 0;
+
 	for (size_t i = 0; i < coreCounter; i++)
 	{
 		//Assigning C0 and C1
 		inputMatrix[8]=keyCounter & 0xFFFFFFFF;
 		inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
-	
-		// start = clock();
 
 		//outputMatrix contains output of core
 		salsa20_core(outputMatrix,inputMatrix);
 
-		// end = clock();
-		// elapsed_time += (((double) end-start) / CLOCKS_PER_SEC) * 1000000; //result in microseconds
-	
 		
 		uint8_t* outputPtr = (uint8_t*)outputMatrix;
 
@@ -239,8 +207,6 @@ static void salsa20_crypt(size_t mlen, const uint8_t msg[mlen], uint8_t cipher[m
 		keyCounter++;
         
 	}
-	// double average_time = elapsed_time / coreCounter;
-	// printf("Average time needed for salsa20_core: %f microseconds\n", average_time);
 
     
 	if (restChar != 0)

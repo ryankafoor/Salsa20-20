@@ -28,58 +28,6 @@ static const uint32_t const2 = 0x3320646e; //3 dn
 static const uint32_t const3 = 0x79622d32; //yb-2
 static const uint32_t const4 = 0x6b206574; //k et
 
-/*
-static char* read_file(const char* path) {
-  char* string = NULL;
-  FILE* file;
-  
-  if(!(file = fopen(path, "r")))  {
-    perror("An error occurred while opening the file");
-    goto cleanup;
-  }
-
-
-  struct stat sb; //Status buffer to check the status of file
-
-
-  if(fstat(fileno(file), &sb)==-1){
-    perror("Status of file could not be checked");
-    goto cleanup;
-  }
-
-  if (!S_ISREG(sb.st_mode) || sb.st_size <= 0){
-    perror("Error: File not a regular file or invalid size");
-    goto cleanup;
-  }
-
-
-  if(!(string = malloc(sb.st_size + 1))){ //st_size does not count the null byte
-    perror("Error in allocating memory");
-    goto cleanup;
-  }
-
-
-  if(fread(string, 1, sb.st_size, file) != (size_t) sb. st_size){  //fread failed when return value not equal to elements read  
-    perror("Error reading file");
-    free(string); 
-    string=NULL; 
-    goto cleanup; 
-  } 
-
-  string[sb.st_size] = '\0';  //append null byte at end of string
-
-  cleanup:
-      if (file){
-        if((fclose(file)) == EOF) { 
-          perror("Error closing file");
-          exit(EXIT_FAILURE);
-        }
-      }
-  
-  return string;
-}
-*/
-
 
 //this function should be used to read from file for the optimised implementation
 static char* read_file(const char* path, size_t** fileSize) {
@@ -270,24 +218,13 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
   //Counter value in key
   uint64_t keyCounter = 0;
 
-
-
-  //Measuring the performance of salsa20_core_v1 with clock(), taking the average for n iterations, with n being coreCounter times
-  // clock_t start, end;
-  // double elapsed_time = 0;
   for (size_t i = 0; i < coreCounter; i++)
   {
     //Assigning C0 and C1
     inputMatrix[8]=keyCounter & 0xFFFFFFFF;
     inputMatrix[9]=(keyCounter >> 32) & 0xFFFFFFFF;
-    
-    // start = clock();
 
-    //outputMatrix contains output of core
     salsa20_core_v1(outputMatrix,inputMatrix);
-
-    // end = clock();
-    // elapsed_time += (((double) (end - start)) / CLOCKS_PER_SEC) * 1000000; //result in microseconds
 
 
     //initializing key for each byte and pointer to outputMatrix
@@ -301,10 +238,6 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
     keyCounter++;
     charPointer = (uint8_t*)outputMatrix;
   }
-
-  // measuring performance on salsa20_core
-  // double average_time = elapsed_time / coreCounter;
-  // printf("Average time needed for salsa20_core_v1: %f microseconds", average_time);
 
   if (restChar != 0)
   {
@@ -329,7 +262,6 @@ static void salsa20_crypt_v1(size_t mlen, const uint8_t msg[mlen], uint8_t ciphe
 
 
 int main(int argc, char *argv[]) {
-  //int opt, next_option;
   int opt;
   const char *input_text = NULL;
   const char *output_file = NULL;
@@ -359,7 +291,7 @@ int main(int argc, char *argv[]) {
 
 
   /*
-  Section Option_Handling START
+  Section Option_Handling
   Parse the available options and their arguments, throw error for unsupported options or invalid arguments
   See help page with ./main -h for more information
   */
@@ -382,9 +314,7 @@ int main(int argc, char *argv[]) {
       {
       case 'd':
           debug_flag = 1;
-          printf("Debug mode on\n");
-          //TODO: debug mode? print out more information? e.g. state of variables / key / iv / etc.
-          //checks if running the program on encrypted message gives the original message back.
+          printf("Debug mode on, checking correctness\n");
           break;
       case 'V':
           if(!is_positive_number(optarg)){
@@ -420,7 +350,7 @@ int main(int argc, char *argv[]) {
           iv = hex_to_little_endian_uint64(input_iv);
           iv_flag = 1;
           break;
-      /*/
+      /*
       -B has an optional argument, meaning it can run with -B, -B<number>, -B <number>
       How this handler works:
         1. If -B is set, then set the benchmark flag
@@ -458,9 +388,7 @@ int main(int argc, char *argv[]) {
           exit(EXIT_FAILURE);
     }
   }
-  /*
-  Section Option_Handling END
-  */
+  
 
   if (argv[optind] == NULL) {
     fprintf(stderr, "Error: Input file missing \n");
@@ -507,9 +435,12 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Error: Input file is empty, nothing to encrypt/decrypt \n");
     exit(EXIT_FAILURE);
   }
+
+  if (mlen >= UINT64_MAX){
+    fprintf(stderr, "Error: size of input file too big. Can only proccess 64 Byte x UINT64_MAX using same key and nonce\n");
+  }
   uint8_t *cipher = NULL;
 
-  //uint8_t *cipher = aligned_malloc(mlen*sizeof(uint8_t),32);
   if (posix_memalign((void **)&cipher,32, mlen*sizeof(uint8_t)) != 0)
   {
     fprintf(stderr,"Error allocating memory for Cipher: test(uint8_t *toEncrypt, size_t mlen \n)");
@@ -570,9 +501,6 @@ int main(int argc, char *argv[]) {
     printf("Average time taken: %f seconds \n", avg_time);
   }
 
-
-
-
   /*
   DEBUG SECTION -- Option / Flag -d set
 
@@ -587,20 +515,43 @@ How this section works:
   - then we compare both texts
 */
   if(debug_flag){
-      printf("\nDebug mode selected,\n");
+      printf("\nDebug mode selected, checking the correctness of the program\n");
       printf("Comparing encrypted text using both versions\n");
+
+      const char* input_text2 = read_file(output_file,&file_size);
+      char *toBeFreed2 = (char*)input_text2;
+      
+      
+      size_t mlen2 = 0;
+      mlen2 = *file_size;
+      if (mlen == 0) {
+          fprintf(stderr, "Error: Input file is empty, nothing to encrypt/decrypt while debug \n");
+          exit(EXIT_FAILURE);
+          }
+      if (mlen >= UINT64_MAX){
+          fprintf(stderr, "Error: size of input file too big. Can only proccess 64 Byte x UINT64_MAX using same key and nonce\n");
+          }
+
+      uint8_t *cipherThree = NULL;
       uint8_t *cipherTwo = NULL;
       if (posix_memalign((void **)&cipherTwo,32, mlen*sizeof(uint8_t)) != 0){
           fprintf(stderr,"Error allocating memory for CipherTwo inside debug mode\n)");
+          exit(EXIT_FAILURE);
+      }
+      if (posix_memalign((void **)&cipherThree,32, mlen2*sizeof(uint8_t)) != 0)
+      {
+          fprintf(stderr,"Error allocating memory for CipherThree: inside debug mode \n)");
           exit(EXIT_FAILURE);
       }
 
       switch(version_number) {
           case 0:
               salsa20_crypt_v1(mlen, (uint8_t *)input_text, cipherTwo, key, iv);
+              salsa20_crypt(mlen2, (uint8_t *)input_text2, cipherThree, key, iv );
               break;
           case 1:
               salsa20_crypt(mlen, (uint8_t *)input_text, cipherTwo, key, iv);
+              salsa20_crypt_v1(mlen2, (uint8_t *)input_text2, cipherThree, key, iv );
               break;
           default: 
               fprintf(stderr, "Error in debug mode: version number invalid \n");
@@ -609,16 +560,19 @@ How this section works:
 
       //compare cipher and cipherTwo
       if(!memcmp((char*)cipher, (char*)cipherTwo, mlen)){
-          printf("Correctness check passed: both versions produce the same encrypted text \n \n");
+          printf("Correctness check passed: both versions produce the same encrypted text \n");
       }
-      else printf("Correctness check failed: both version produce different encrypted text \n \n");
+      else printf("Correctness check failed: both version produce different encrypted text  \n");
 
-      //use only for small texts
-//       printf("mlen is %ld\n", mlen);
-//       for(size_t i = 0; i < mlen; i++) {  
-//       printf("cipher[%zu] = %02x, cipherTwo[%zu] = %02x\n", i, cipher[i], i, cipherTwo[i]);
-// }
+      //compare cipherThree and original text
+      if(!memcmp((char*)input_text, (char*)cipherThree, mlen2)){
+          printf("Correctness check passed: running the encrypted text using the same key and nonce produces the original text\n \n");
+      }
+      else printf("Correctness check failed: decryption using the same key and nonce result in a different text \n \n");
+    
       free(cipherTwo);
+      free(cipherThree);
+      free(toBeFreed2);
   }
  
   free(cipher);
@@ -627,92 +581,6 @@ How this section works:
   printf("Message length: %zu char \n", mlen);
 return EXIT_SUCCESS;
 
-  /*
-  ==========================================
-   TEST CODE in main
-  ==========================================
-  */
-
-  //msg we can alter
-  //uint8_t *msg = (uint8_t*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDE";
-  //uint8_t *msg = (uint8_t*)"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.156464";
-  /*
-  char* msg = read_file("input.txt");
-  if(!msg){
-    printf("Failure in reading from file\n");
-    return EXIT_FAILURE;
-  } 
   
-  size_t msgLen = strlen((char*)msg);
-  */
-  /*
-  printf("Original Message :\n");
-  for (size_t i = 0; i < msgLen; i++)
-  {
-  printf("index %zu: %u\n",i ,msg[i]);
-  }
-  
-  */
-  /*
-  printf("\n");
-  //check
-
-  struct timespec start_time;
-  struct timespec end_time;
-
-  clock_gettime(CLOCK_MONOTONIC,&start_time);
-
-  //uint8_t *encrypted = test((uint8_t *)msg,msgLen);
-
-  clock_gettime(CLOCK_MONOTONIC, &end_time);
-
-  double time = end_time.tv_sec - start_time.tv_sec + 1e-9*(end_time.tv_nsec - start_time.tv_nsec);
-  double time_for_one_byte = time / msgLen;
-  */
-/*
-  printf("Encrypted Message :\n");
-  for (size_t i = 0; i < msgLen; i++)
-  {
-  printf("index %zu: %u\n",i ,encrypted[i]);
-  }
-  printf("\n");
-  // check if the decrypted message matches the original message
-  */
-  //uint8_t *decrypted = test(encrypted,msgLen);
-
-  //write_file("output.txt",(char *)decrypted);
-  /*
-  printf("Decrypted Message :\n");
-  for (size_t i = 0; i < msgLen; i++)
-  {
-  printf("index %zu: %u\n",i ,decrypted[i]);
-  }
-  printf("\n");
-
-*/
-/*
-  if(memcmp(msg, decrypted, msgLen) != 0) {
-      printf("Decryption failed.\n");
-      return EXIT_FAILURE;
-    }
-  printf("Decryption succeeded.\n");
-   
-  //aligned_free(encrypted);
-  //aligned_free(decrypted);
-  
-
-  printf("Time taken for ecrypting message: %f\n", time);
-  printf("Average time for one byte: %f\n", time_for_one_byte);
-  */
-  /*
-  ==========================================
-   TEST CODE in main END
-  ==========================================
-  */
-
-  //Run with ./main -k 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef -o output.txt -i 0123456789abcdef test.txt
-  
-
-  //return EXIT_SUCCESS;
 }
 
