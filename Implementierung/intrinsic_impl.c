@@ -208,7 +208,7 @@ uint32_t rotate_bits_asm(uint32_t number, uint8_t i);
         
 	}
 
-    
+    //remaining chars processed
 	if (restChar != 0)
 	{
 		inputMatrix[8]=keyCounter & 0xFFFFFFFF;

@@ -342,12 +342,12 @@ int main(int argc, char *argv[]) {
           break;
       case 'k':
           pad_hex_string(optarg, input_key, 64);
-          hex_to_little_endian_32bit_array(input_key, key, 8);
+          hex_array(input_key, key, 8);
           key_flag = 1;
           break;
       case 'i':
           pad_hex_string(optarg, input_iv, 16);
-          iv = hex_to_little_endian_uint64(input_iv);
+          iv = hex_uint64(input_iv);
           iv_flag = 1;
           break;
       /*

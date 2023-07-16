@@ -15,10 +15,10 @@ int is_valid_hex(char c);
 uint32_t hex_to_decimal(char c);
 
 //function to convert a hex string to a 32 bit little endian array FOR KEYS!!!
-void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size_t array_size); 
+void hex_array(const char* hex, uint32_t* out_array, size_t array_size); 
 
 //function to convert a hex string to a 64 bit little endian uint64 FOR IV / NONCE!!!
-uint64_t hex_to_little_endian_uint64(const char* hex);
+uint64_t hex_uint64(const char* hex);
 
 
 #endif // __UTIL_H__

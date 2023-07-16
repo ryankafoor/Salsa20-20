@@ -53,7 +53,7 @@ void print_help() {
     printf("meaning the program accepts both -B100 and -B 100.\n");
     printf("Hexadecimal arguments do not require the prefix 0x. Simply put e.g. -i 0123abcde.\n\n");
 
-    printf("Furthermore we also provided a script to generate a text file.\n");
+    printf("Furthermore a script to generate a text file is provided.\n");
     printf("As an example to generate a text file with 2 millions characters, we could run:\n\n");
     printf("\t make input_custom CUSTOM_NUM=\"2000000\"\n\n");
     printf("The generated text file will have the name input.txt\n");
@@ -65,7 +65,7 @@ void print_help() {
     printf("\t With initialisation vector 0123456789abcdef, \n");
     printf("\t To encrypt the input file input.txt, and write the output in output.txt,\n");
     printf("\t By doing 100 iterations: \n\n");
-    printf("\t ./main -V 0 -B 100 -k 0123456789abcdef0123456789abcdef -i 0123456789abcdef -o output.txt input.txt\n \n");
+    printf("\t ./main -V 0 -B 5 -k 0123456789abcdef0123456789abcdef -i 0123456789abcdef -o output.txt input.txt\n \n");
     printf(" ==================== END OF SALSA20 HELP PAGE ====================\n");
 return;
 }
@@ -74,13 +74,13 @@ return;
 /*
     ================== Handling Hex Input ==================
 */
-
+//see util.h for more information
 int is_valid_hex(char c) {
     return isxdigit(c);
 }
 
 
-void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size_t array_size) {
+void hex_array(const char* hex, uint32_t* out_array, size_t array_size) {
     size_t hex_length = strlen(hex);
     
     if (hex_length != 64 || array_size < 8 ) {
@@ -107,7 +107,7 @@ void hex_to_little_endian_32bit_array(const char* hex, uint32_t* out_array, size
 
 
 
-uint64_t hex_to_little_endian_uint64(const char* hex) {
+uint64_t hex_uint64(const char* hex) {
     size_t hex_length = strlen(hex);
     uint64_t iv;
    
