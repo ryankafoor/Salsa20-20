@@ -272,7 +272,6 @@ Da C keinen Bit-Rotationsoperator bereitstellt, wurde eine Funktion in C impleme
 Eine weitere Operation, die die Kernfunktion verlangsamte, war die Transponierungsfunktion. Die Gesamtzahl der Iterationen für eine einzelne Kernmatrix beträgt 20. Am Ende jeder Iteration musste die 4x4-Matrix transponiert werden, bevor die nächste Reihe von Operationen ausgeführt werden konnte. Diese Funktion wurde jedoch dadurch überflüssig, dass die nächste Reihe von Operationen einfach auf dem bestehenden, nicht transponierten Array in der transponierten Reihenfolge ausgeführt wurde. Zum Beispiel wird statt auf die Elemente 4 und 9 in der transponierten Matrix auf die Elemente 1 und 6 in der nicht transponierten Matrix zugegriffen.
 Durch das Überspringen des Transponierungsschritts wird unnötiger Rechenaufwand vermieden, und die Operationen können effizienter an der bestehenden, nicht transponierten Matrix durchgeführt werden.
 
-
 \begin{figure}[h] 
   \centering 
   \includegraphics[width=0.9\textwidth]{transpose.png} 
