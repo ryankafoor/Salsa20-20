@@ -1,3 +1,3 @@
-# Projektrepository
+# Salsa20/20
 
-This is a C implementation of a version of a stream cypher known as Salsa20/20 introduced by Daniel J. Bernstein which is based on an Add-rotate-XOR (ARX) scheme. The C program uses intrinsics among other optimizations to enhance the algorithms performance. This was done as projecct work during the second semester of my Comp. Sci course at TUM. 
+This is a C implementation of a version of a stream cypher known as Salsa20/20 introduced by Daniel J. Bernstein which is based on an Add-rotate-XOR (ARX) scheme. The C program uses intrinsics among other optimizations to enhance the algorithms performance. This was done as projecct work during the second semester of my Comp. Sci course at TUM. More details about the algorithm can be found in the file "Salsa20.pdf" 
